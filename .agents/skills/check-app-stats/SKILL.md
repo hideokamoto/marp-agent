@@ -2,21 +2,21 @@
 name: check-app-stats
 model: sonnet
 description: このアプリの利用統計を確認（Cognitoユーザー数、AgentCore呼び出し回数、Bedrockコスト、Tavily API残量）
-allowed-tools: Bash(bash .Codex/skills/check-app-stats/run.sh)
+allowed-tools: Bash(bash .agents/skills/check-app-stats/run.sh)
 ---
 
 # 環境利用状況チェック
 
 各Amplify環境（main/kag）のCognitoユーザー数とBedrock AgentCoreランタイムのセッション数を調査する。Bedrockコストについてはdev環境も含めて集計する。
 
-mainとkagは別AWSアカウントで運用されているため、それぞれのプロファイルで個別にデータ取得する。
+mainとkagはいずれも移行前/移行後のAWSアカウントをまたいで履歴が存在するため、旧環境と新環境を個別に取得してから環境別に合算する。
 
 ## 実行方法
 
 以下のコマンドを実行する。スクリプト内ですべてのデータ取得を並列化している。
 
 ```bash
-bash .Codex/skills/check-app-stats/run.sh
+bash .agents/skills/check-app-stats/run.sh
 ```
 
 ## 出力フォーマット
@@ -24,7 +24,7 @@ bash .Codex/skills/check-app-stats/run.sh
 スクリプト実行後、以下の情報が出力される：
 
 1. **直近12時間のセッション数**: 時間帯別の表形式（main/kag/dev）
-2. **Cognitoユーザー数**: 環境ごとのユーザー数（main/kag）。kagは旧環境（sandbox内）と新環境（kag-sandbox）の両方を取得し、メールで重複除外したユニーク数を表示 + kagユーザー一覧（新旧マージ、所属環境タグ付き）
+2. **Cognitoユーザー数**: 環境ごとのユーザー数（main/kag）。どちらも旧環境（sandbox内）と新環境（kag-sandbox）の両方を取得し、メールで重複除外したユニーク数を表示 + kagユーザー一覧（新旧マージ、所属環境タグ付き）
 3. **日次セッション数**: 過去7日間の日別回数（main/kag/dev別）
 4. **時間別セッション数**: 直近24時間の全時間帯（ASCIIバーグラフ・JST表示、main/kag/dev）
 5. **Bedrockコスト（日別）**: 過去7日間の日別コスト（main+dev/kag別）
@@ -39,34 +39,40 @@ bash .Codex/skills/check-app-stats/run.sh
 ## アーキテクチャ
 
 ```
-sandbox アカウント (715841358122)
-├── Cognito: marp-main プール
+sandbox アカウント（移行前）
+├── Cognito: marp-agent main プール（旧main）
 ├── Cognito: marp-kag プール（旧KAG環境）
-├── AgentCore: marp_agent_main, marp_agent_dev
-└── Bedrock: main + dev のコスト
+├── AgentCore: marp_agent_main（旧main）, marp_agent_kag（旧kag）, marp_agent_dev
+└── Bedrock: Projectタグ未設定のため、旧main/旧kag/devのセッション比率で按分
 
-kag-sandbox アカウント (105778051969)
-├── Cognito: amplifyAuthUserPool（新KAG環境、CloudFormation出力で特定）
-├── AgentCore: marp_agent_main（kagリポのmainブランチ）
-└── Bedrock: kag のコスト
+kag-sandbox アカウント（移行後）
+├── marp-agent: 新main（Amplify App IDはアプリ名から自動取得）
+│   ├── Cognito: CloudFormation出力で特定
+│   ├── AgentCore: pawapo_agent_main
+│   └── Bedrock: Project=pawapo-public
+└── marp-agent-kag: 新kag（Amplify App IDはアプリ名から自動取得）
+    ├── Cognito: CloudFormation出力で特定
+    ├── AgentCore: marp_agent_main
+    └── Bedrock: Project=pawapo-kag
 ```
 
 ## 技術詳細
 
 ### マルチアカウント対応
 
-mainとkagは異なるAWSアカウントで運用されている。スクリプトは `PROFILE_MAIN` と `PROFILE_KAG` の2つのプロファイルを使い分ける。
+main/kagとも移行前後のデータを合算する。スクリプトは `PROFILE_OLD=sandbox` と `PROFILE_NEW=kag-sandbox` の2つのプロファイルを使い分ける。
 
-- **sandbox**: main環境 + dev環境のリソースとコスト
-- **kag-sandbox**: kag環境のリソースとコスト
+- **sandbox**: 旧main、旧kag、devのリソースとコスト
+- **kag-sandbox**: 新main、新kagのリソースとコスト
 
-SSOセッションが切れている場合、スクリプトが自動的に `aws sso login` を実行する。kag-sandboxのログインに失敗した場合のみ、kagのデータはスキップされる。
+SSOセッションが切れている場合、スクリプトが自動的に `aws sso login` を実行する。kag-sandboxのログインに失敗した場合は、移行後のmain/kagデータをスキップする。
 
 ### コスト計算方法
 
 - **クレジット除外**: Cost Explorer APIで `RECORD_TYPE=Usage` フィルターを適用し、AWSクレジット適用前の実利用コストを取得
-- **kag**: kag-sandboxアカウントの実コスト（推定なし）
-- **main/dev**: sandboxアカウントのコストをセッション比率で按分（devセッションがない場合は全額main）
+- **移行後 main/kag**: kag-sandboxアカウントのタグ付きインフラ料金は `Project` タグ（`pawapo-public` / `pawapo-kag`）で集計し、タグが空で出るBedrockモデル料金は新main/新kagのセッション比率で按分
+- **移行前 main/kag/dev**: sandboxアカウントはProjectタグ未設定のため、旧main/旧kag/devのセッション比率で按分
+- **未配賦**: sandboxアカウントにBedrockコストがあるが該当日の旧環境セッションが0の場合に表示する。1セッションあたりのコスト計算からは除外する。
 
 ### OTELログ形式への対応
 
@@ -86,7 +92,7 @@ stats min(@timestamp) as first_seen by sid | stats count(*) as sessions by datef
 
 ### kag-sandbox の Cognito プール特定
 
-kag-sandboxアカウントではCognitoプール名が汎用的（`amplifyAuthUserPool*`）なため、`marp-kag` のような名前検索ができない。代わりにCloudFormation出力からAmplifyアプリ `dt1uykzxnkuoh` に紐づくプールIDを取得している。
+kag-sandboxアカウントではCognitoプール名が汎用的（`amplifyAuthUserPool*`）なため、名前検索ではなくAmplifyアプリ名からApp IDを取得し、対象ブランチ（main）のCloudFormation出力からプールIDを取得する。
 
 ## 注意事項
 
