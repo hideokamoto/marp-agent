@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{DECK_TITLE}}</title>
+<meta name="description" content="{{DECK_SUBTITLE}}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* Type tokens carried over from the design source */
+  .mono{font-family:'SF Mono',ui-monospace,'Roboto Mono',monospace;}
+  .mincho{font-family:'Shippori Mincho',serif;}
+</style>
+<link rel="stylesheet" href="deck.css">
+</head>
+<body>
+<div id="deck">
+  <div class="stage" id="stage">
+    <div id="stage-scaler">
+
+      <!-- SLIDES:START -->
+      <!-- Paste the chosen filled slide blocks here, in order. -->
+      <!-- SLIDES:END -->
+
+    </div><!-- /#stage-scaler -->
+  </div><!-- /.stage -->
+
+  <!-- Progress bar -->
+  <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
+
+  <!-- Heads-up display / controls -->
+  <div class="hud" id="hud">
+    <span class="hud-label mincho" id="slide-label"></span>
+    <span class="hud-spacer"></span>
+    <button class="hud-btn" id="btn-overview" title="スライド一覧 (O)" aria-label="スライド一覧">▦</button>
+    <button class="hud-btn" id="btn-notes" title="スピーカーノート (N)" aria-label="スピーカーノート">✎</button>
+    <button class="hud-btn" id="btn-full" title="全画面 (F)" aria-label="全画面">⤢</button>
+    <button class="hud-btn" id="btn-help" title="ショートカット (?)" aria-label="ショートカット">?</button>
+    <span class="hud-nav">
+      <button class="hud-btn" id="btn-prev" title="前へ" aria-label="前のスライド">‹</button>
+      <span class="hud-counter mono" id="counter">1 / 1</span>
+      <button class="hud-btn" id="btn-next" title="次へ" aria-label="次のスライド">›</button>
+    </span>
+  </div>
+
+  <!-- Speaker notes drawer -->
+  <div class="notes" id="notes" hidden role="dialog" aria-modal="true" aria-label="スピーカーノート">
+    <div class="notes-head">
+      <span class="notes-num mono" id="notes-num"></span>
+      <span class="notes-label mincho" id="notes-label"></span>
+      <button class="hud-btn notes-close" id="btn-notes-close" title="閉じる" aria-label="閉じる">✕</button>
+    </div>
+    <p class="notes-body" id="notes-body"></p>
+  </div>
+
+  <!-- Overview grid -->
+  <div class="overview" id="overview" hidden role="dialog" aria-modal="true" aria-label="スライド一覧">
+    <div class="overview-head">
+      <span class="mincho overview-title">スライド一覧</span>
+      <button class="hud-btn" id="btn-overview-close" title="閉じる (Esc)" aria-label="閉じる">✕</button>
+    </div>
+    <div class="overview-grid" id="overview-grid"></div>
+  </div>
+
+  <!-- Keyboard help -->
+  <div class="help" id="help" hidden role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <div class="help-card">
+      <div class="help-head"><span class="mincho" id="help-title">キーボード操作</span><button class="hud-btn" id="btn-help-close" title="閉じる" aria-label="閉じる">✕</button></div>
+      <ul class="help-list">
+        <li><span class="key">→</span><span class="key">Space</span><span class="key">PgDn</span><em>次のスライド</em></li>
+        <li><span class="key">←</span><span class="key">PgUp</span><em>前のスライド</em></li>
+        <li><span class="key">Home</span><span class="key">End</span><em>最初 / 最後へ</em></li>
+        <li><span class="key">O</span><em>スライド一覧</em></li>
+        <li><span class="key">N</span><em>スピーカーノート</em></li>
+        <li><span class="key">F</span><em>全画面</em></li>
+        <li><span class="key">Esc</span><em>オーバーレイを閉じる</em></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script src="deck.js"></script>
+</body>
+</html>

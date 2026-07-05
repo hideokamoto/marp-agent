@@ -240,7 +240,7 @@ export function useChatMessages({
             )
           );
 
-          if (toolName === 'output_slide') {
+          if (toolName === 'output_slide' || toolName === 'output_deck') {
             setMessages(prev => {
               const hasExisting = prev.some(
                 msg => msg.isStatus && msg.statusText?.startsWith(MESSAGES.SLIDE_GENERATING_PREFIX)

@@ -1,0 +1,301 @@
+/* ==========================================================================
+   deckdeck — runtime chrome for the 折衷 技術スライド集 deck
+   Slides carry their own inline styles (verbatim from the design source);
+   this file only styles the stage, scaling frame and presenter chrome.
+   ========================================================================== */
+
+:root{
+  --paper:#F5F2EC;
+  --ink:#23262B;
+  --indigo:#2F5375;
+  --indigo-lt:#6E9BC0;
+  --gold:#E0A63C;
+  --green:#3E7A55;
+  --dark:#16181C;
+  --stage:#22252A;
+}
+
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  background:var(--stage);
+  overflow:hidden;
+  font-family:'Zen Kaku Gothic New',sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+body.idle{cursor:none;}
+
+#deck{position:fixed;inset:0;}
+
+/* --- stage & 16:9 scaling frame ---------------------------------------- */
+.stage{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  background:var(--stage);
+}
+#stage-scaler{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:1920px;
+  height:1080px;
+  transform-origin:center center;   /* transform set by deck.js */
+  will-change:transform;
+}
+.deck-slide{
+  position:absolute;
+  top:0;
+  left:0;
+  width:1920px;
+  height:1080px;
+  display:none;
+}
+.deck-slide.active{display:block;}
+/* .ov-stage > section covers overview thumbnails, whose cloned sections live
+   outside .deck-slide and would otherwise collapse to auto height. */
+.deck-slide > section,
+.ov-stage > section{
+  width:1920px;
+  height:1080px;
+  box-sizing:border-box;
+  overflow:hidden;
+}
+
+/* --- progress bar ------------------------------------------------------- */
+.progress{
+  position:absolute;
+  left:0;right:0;bottom:0;
+  height:4px;
+  background:rgba(255,255,255,0.06);
+  z-index:30;
+}
+.progress-bar{
+  height:100%;
+  width:0;
+  background:var(--gold);
+  transition:width .35s cubic-bezier(.4,0,.2,1);
+}
+
+/* --- HUD ---------------------------------------------------------------- */
+.hud{
+  position:absolute;
+  left:0;right:0;bottom:0;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:16px 24px 20px;
+  z-index:31;
+  color:#E9E7DF;
+  background:linear-gradient(to top, rgba(10,11,13,0.55), rgba(10,11,13,0));
+  transition:opacity .4s ease;
+}
+body.idle .hud{opacity:0;pointer-events:none;}
+
+.hud-label{
+  font-size:20px;
+  letter-spacing:.02em;
+  color:#CBCFD4;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:40vw;
+}
+.hud-spacer{flex:1;}
+
+.hud-btn{
+  appearance:none;
+  border:1px solid rgba(233,231,223,0.16);
+  background:rgba(233,231,223,0.06);
+  color:#E9E7DF;
+  width:40px;height:40px;
+  border-radius:10px;
+  font-size:20px;
+  line-height:1;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  transition:background .18s ease, border-color .18s ease, transform .05s ease;
+}
+.hud-btn:hover{background:rgba(233,231,223,0.16);border-color:rgba(233,231,223,0.34);}
+.hud-btn:active{transform:translateY(1px);}
+.hud-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+.hud-nav{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  margin-left:8px;
+  padding-left:14px;
+  border-left:1px solid rgba(233,231,223,0.14);
+}
+.hud-counter{
+  font-size:20px;
+  letter-spacing:.08em;
+  min-width:78px;
+  text-align:center;
+  color:#E9E7DF;
+}
+
+/* --- speaker notes drawer ---------------------------------------------- */
+.notes{
+  position:absolute;
+  left:0;right:0;bottom:0;
+  z-index:34;
+  background:rgba(18,20,24,0.94);
+  border-top:1px solid rgba(233,231,223,0.12);
+  color:#E9E7DF;
+  padding:26px 32px 40px;
+  box-shadow:0 -20px 50px rgba(0,0,0,0.35);
+  animation:slide-up .22s ease;
+}
+.notes[hidden]{display:none;}
+@keyframes slide-up{from{transform:translateY(24px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.notes-head{
+  display:flex;
+  align-items:baseline;
+  gap:16px;
+  margin-bottom:14px;
+}
+.notes-num{color:var(--gold);font-size:20px;letter-spacing:.1em;}
+.notes-label{font-size:26px;font-weight:600;color:#F1EFE8;}
+.notes-close{margin-left:auto;align-self:center;}
+.notes-body{
+  margin:0;
+  font-size:22px;
+  line-height:1.75;
+  color:#C7CBD0;
+  max-width:1400px;
+  white-space:pre-wrap;   /* preserve line breaks in speaker notes */
+}
+
+/* --- overview grid ------------------------------------------------------ */
+.overview{
+  position:absolute;
+  inset:0;
+  z-index:40;
+  background:#101216;
+  display:flex;
+  flex-direction:column;
+  animation:fade .2s ease;
+}
+.overview[hidden]{display:none;}
+@keyframes fade{from{opacity:0;}to{opacity:1;}}
+.overview-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:22px 30px;
+  border-bottom:1px solid rgba(233,231,223,0.1);
+  color:#E9E7DF;
+}
+.overview-title{font-size:26px;font-weight:600;letter-spacing:.04em;}
+.overview-grid{
+  flex:1;
+  overflow-y:auto;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:26px;
+  padding:30px;
+  align-content:start;
+}
+.ov-cell{
+  appearance:none;
+  border:0;
+  background:transparent;
+  padding:0;
+  cursor:pointer;
+  text-align:left;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.ov-frame{
+  position:relative;
+  width:100%;
+  aspect-ratio:16/9;
+  overflow:hidden;
+  border-radius:10px;
+  border:2px solid rgba(233,231,223,0.14);
+  background:var(--paper);
+  transition:border-color .18s ease, transform .12s ease;
+}
+.ov-cell:hover .ov-frame{transform:translateY(-3px);border-color:rgba(233,231,223,0.4);}
+.ov-cell.active .ov-frame{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold);}
+.ov-cell:focus-visible{outline:none;}
+.ov-cell:focus-visible .ov-frame{outline:2px solid var(--gold);outline-offset:2px;border-color:var(--gold);}
+.ov-stage{
+  position:absolute;
+  top:0;left:0;
+  width:1920px;
+  height:1080px;
+  transform-origin:top left;   /* scale set by deck.js */
+  pointer-events:none;
+}
+.ov-cap{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  color:#CBCFD4;
+  font-size:16px;
+  line-height:1.4;
+}
+.ov-cap .mono{color:var(--gold);font-size:14px;letter-spacing:.06em;}
+.ov-cell.active .ov-cap{color:#F1EFE8;}
+
+/* --- keyboard help ------------------------------------------------------ */
+.help{
+  position:absolute;
+  inset:0;
+  z-index:50;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(12,13,16,0.6);
+  animation:fade .18s ease;
+}
+.help[hidden]{display:none;}
+.help-card{
+  background:#1B1E23;
+  border:1px solid rgba(233,231,223,0.14);
+  border-radius:16px;
+  padding:30px 34px;
+  min-width:420px;
+  color:#E9E7DF;
+  box-shadow:0 30px 70px rgba(0,0,0,0.5);
+}
+.help-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-size:24px;
+  font-weight:600;
+  margin-bottom:20px;
+}
+.help-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px;}
+.help-list li{display:flex;align-items:center;gap:8px;font-size:18px;color:#C7CBD0;}
+.help-list em{margin-left:auto;font-style:normal;color:#E9E7DF;}
+.key{
+  font-family:'SF Mono',ui-monospace,'Roboto Mono',monospace;
+  font-size:14px;
+  padding:4px 9px;
+  border-radius:7px;
+  background:rgba(233,231,223,0.08);
+  border:1px solid rgba(233,231,223,0.18);
+  color:#E9E7DF;
+}
+
+/* --- narrow screens ----------------------------------------------------- */
+@media (max-width:640px){
+  .hud-label{display:none;}
+  .overview-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px;padding:18px;}
+  .help-card{min-width:0;max-width:92vw;}   /* never overflow narrow viewports */
+}
+
+/* --- respect reduced-motion preferences --------------------------------- */
+@media (prefers-reduced-motion: reduce){
+  .notes,.overview,.help{animation:none;}
+  .progress-bar,.hud,.ov-frame,.hud-btn{transition:none;}
+}

@@ -79,16 +79,10 @@ export function createMarpAgent({ stack, userPool, userPoolClient, nameSuffix, r
     authorizerConfiguration: authConfig,
     environmentVariables: {
       TAVILY_API_KEYS: process.env.TAVILY_API_KEYS || '',
-      BYPASS_TOOL_CONSENT: 'true',
       // 共有スライド用S3/CloudFront設定
       SHARED_SLIDES_BUCKET: sharedSlidesBucket?.bucketName || '',
       CLOUDFRONT_DOMAIN: sharedSlidesDistributionDomain || '',
       SHARED_SLIDES_PUBLIC_DOMAIN: sharedSlidesPublicDomain || sharedSlidesDistributionDomain || '',
-      // Observability（OTEL）設定
-      AGENT_OBSERVABILITY_ENABLED: 'true',
-      OTEL_PYTHON_DISTRO: 'aws_distro',
-      OTEL_PYTHON_CONFIGURATOR: 'aws_configurator',
-      OTEL_EXPORTER_OTLP_PROTOCOL: 'http/protobuf',
     },
   });
 

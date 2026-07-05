@@ -1,12 +1,10 @@
 # ECR Public Galleryを使用（Docker Hubのレート制限を回避）
-FROM --platform=linux/arm64 public.ecr.aws/docker/library/python:3.13-slim-bookworm
+FROM --platform=linux/arm64 public.ecr.aws/docker/library/node:22-bookworm-slim
 
 WORKDIR /app
 
-# Node.js、Chromium、日本語フォント、LibreOffice Impressをインストール
+# Chromium、日本語フォント、LibreOffice Impress（編集可能PPTX用）をインストール
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    nodejs \
-    npm \
     chromium \
     fonts-noto-cjk \
     libreoffice-impress \
@@ -16,25 +14,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Marp CLI をインストール
 RUN npm install -g @marp-team/marp-cli
 
-# Puppeteer の Chromium パス設定
+# Chromium パス設定（Marp CLIのPuppeteerと折衷デッキのplaywright-coreの両方が参照）
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
-# Python 依存関係をインストール
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+# Node 依存関係をインストール
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
 
-# エージェントコードと全テーマをコピー
-COPY agent.py config.py ./
+# ランタイムのソースとアセットをコピーしてビルド
+COPY tsconfig.json ./
+COPY src/ ./src/
+COPY decks/ ./decks/
+RUN npm run build && npm prune --omit=dev
+
+# テーマCSS（`npm run copy-themes` でランタイムルートに配置されたもの）をコピー
 COPY *.css ./
-
-# サブモジュールをコピー
-COPY tools/ ./tools/
-COPY exports/ ./exports/
-COPY sharing/ ./sharing/
-COPY session/ ./session/
 
 EXPOSE 8080
 
-# OTELの自動計装を有効にして起動
-CMD ["opentelemetry-instrument", "python", "agent.py"]
+ENV NODE_ENV=production
+CMD ["node", "dist/server.js"]

@@ -1,5 +1,10 @@
 # バックエンド（AgentCore SDK・Strands Agents）
 
+> **⚠️ 2026-07 移行済み**: エージェントランタイムはStrands（Python）から
+> **Mastra（TypeScript）**に移行した。現行構成は [mastra-runtime.md](mastra-runtime.md) を参照。
+> 以下はPython時代の記録として残している（AgentCoreの概念・Observability・セッション管理の
+> 考え方は現行でも有効）。
+
 ## Bedrock AgentCore SDK（Python）
 
 ### 基本構造

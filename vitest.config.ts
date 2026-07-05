@@ -7,5 +7,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: './src/test/setup.ts',
+    // エージェントランタイムは独自のvitest設定を持つ（amplify/agent/runtime/vitest.config.ts）
+    exclude: ['**/node_modules/**', 'amplify/**'],
   },
 });
