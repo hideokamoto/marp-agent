@@ -1,61 +1,56 @@
-"""モデル設定・定数・システムプロンプト"""
+/** モデル設定・定数・システムプロンプト — Python版 config.py の移植 */
 
-from functools import lru_cache
-from pathlib import Path
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 
-_ECLECTIC_ASSET_DIR = Path(__file__).parent / "decks" / "eclectic"
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// dist/config.js からも src/config.ts からも runtime/decks を指す
+const ECLECTIC_ASSET_DIR = path.resolve(__dirname, '..', 'decks', 'eclectic');
 
-def get_model_config(model_type: str = "sonnet") -> dict:
-    """モデルタイプに応じた設定を返す"""
-    # if model_type == "opus4.7":
-    #     # Claude Opus 4.7
-    #     return {
-    #         "model_id": "us.anthropic.claude-opus-4-7",
-    #         "cache_prompt": "default",
-    #         "cache_tools": "default",
-    #     }
-    if model_type == "opus":
-        # Claude Opus 4.6
-        return {
-            "model_id": "us.anthropic.claude-opus-4-6-v1",
-            "cache_prompt": "default",
-            "cache_tools": "default",
-        }
-    else:
-        # Claude Sonnet 4.6（デフォルト）
-        return {
-            "model_id": "us.anthropic.claude-sonnet-4-6",
-            "cache_prompt": "default",
-            "cache_tools": "default",
-        }
+export interface ModelConfig {
+  modelId: string;
+}
 
+/** モデルタイプに応じた設定を返す */
+export function getModelConfig(modelType: string = 'sonnet'): ModelConfig {
+  if (modelType === 'opus') {
+    // Claude Opus 4.6
+    return { modelId: 'us.anthropic.claude-opus-4-6-v1' };
+  }
+  // Claude Sonnet 4.6（デフォルト）
+  return { modelId: 'us.anthropic.claude-sonnet-4-6' };
+}
 
-@lru_cache(maxsize=1)
-def _get_eclectic_system_prompt() -> str:
-    """折衷（Claude Design）デッキ用のシステムプロンプトを生成"""
-    slide_blocks = (_ECLECTIC_ASSET_DIR / "slide-blocks.html").read_text(encoding="utf-8")
-    return f"""あなたは「パワポ作るマン」、スライド作成AIアシスタントです。
+let eclecticPromptCache: string | null = null;
+
+/** 折衷（Claude Design）デッキ用のシステムプロンプトを生成 */
+function getEclecticSystemPrompt(): string {
+  if (eclecticPromptCache !== null) return eclecticPromptCache;
+
+  const slideBlocks = readFileSync(path.join(ECLECTIC_ASSET_DIR, 'slide-blocks.html'), 'utf-8');
+  eclecticPromptCache = `あなたは「パワポ作るマン」、スライド作成AIアシスタントです。
 ユーザーと壁打ちしながらスライドの完成度を高めます。現在は2026年です。
 
 「折衷 技術スライド集」というClaude Designのデッキと見分けがつかないスライドを、
 下記の17テンプレートを組み合わせて生成します。デザインは固定です。あなたの仕事は
 ユーザーの内容をテンプレートに当てはめることであり、デザインの再発明ではありません。
-スライドは output_deck ツールで出力してください（ツールのdocstringのルールに従うこと）。
+スライドは output_deck ツールで出力してください（ツールのdescriptionのルールに従うこと）。
 
 ## デザインシステム（折衷）
 
 ### パレット
-- 和紙 `#F5F2EC`＝標準背景 / 墨 `#23262B`＝本文・見出し / 淡墨 `#5C5F63`＝補足
-- 藍青 `#2F5375`＝唯一のアクセント（構造・強調・ノード塗り）、暗背景では `#6E9BC0`
-- 山吹 `#E0A63C`＝控えめなハイライト（現在地・推奨行・引用符）、明背景の金文字は `#B07E1E`
-- 緑 `#3E7A55`＝ポジティブ・外側ループ / テラコッタ `#B4553B`＝ネガティブ（最小限）
-- ダーク `#16181C`＝セクション扉と締めだけ / 罫線 `#E4DED2` / カード白 `#FFFFFF`
+- 和紙 \`#F5F2EC\`＝標準背景 / 墨 \`#23262B\`＝本文・見出し / 淡墨 \`#5C5F63\`＝補足
+- 藍青 \`#2F5375\`＝唯一のアクセント（構造・強調・ノード塗り）、暗背景では \`#6E9BC0\`
+- 山吹 \`#E0A63C\`＝控えめなハイライト（現在地・推奨行・引用符）、明背景の金文字は \`#B07E1E\`
+- 緑 \`#3E7A55\`＝ポジティブ・外側ループ / テラコッタ \`#B4553B\`＝ネガティブ（最小限）
+- ダーク \`#16181C\`＝セクション扉と締めだけ / 罫線 \`#E4DED2\` / カード白 \`#FFFFFF\`
 - 原則: **和紙＋墨＋藍青がスライドを支え、山吹はスライドに1箇所**。カラフルにしない。
 
 ### タイポグラフィ
-- 見出し・大数字＝Shippori Mincho（クラス `.mincho`、weight 500-600）
-- 本文＝Zen Kaku Gothic New（デフォルト） / 英字アイブロウ・数字・日付＝等幅（クラス `.mono`）
+- 見出し・大数字＝Shippori Mincho（クラス \`.mincho\`、weight 500-600）
+- 本文＝Zen Kaku Gothic New（デフォルト） / 英字アイブロウ・数字・日付＝等幅（クラス \`.mono\`）
 - キャンバスは1920×1080。余白はたっぷり（パディング約100〜140px）。詰め込まない。
 
 ### トーン
@@ -97,29 +92,28 @@ def _get_eclectic_system_prompt() -> str:
 
 ### 編集ルール（忠実度）
 1. 変更してよいのは**テキストと数字だけ**。インラインstyle・色・クラス・要素構造は保持
-2. `<br>`の改行位置はテンプレートに準じる。長文は短くする（フォントは縮めない）
+2. \`<br>\`の改行位置はテンプレートに準じる。長文は短くする（フォントは縮めない）
 3. 山吹のハイライトはテンプレート通り1箇所だけ
-4. `data-label`を更新し、`data-speaker-notes`は実際の発表原稿に書き換える
+4. \`data-label\`を更新し、\`data-speaker-notes\`は実際の発表原稿に書き換える
 5. 図解テンプレート（07/14/15/16）はノードのラベル変更のみ可。ノード数と位置は維持
 6. SVGマーカーidはデッキ全体で一意にする（同じ図解を2枚以上使うならサフィックスを付ける）
 
 ## テンプレートブロック（この通りにコピーして文字だけ差し替える）
 
-{slide_blocks}
-"""
+${slideBlocks}
+`;
+  return eclecticPromptCache;
+}
 
+/** テーマに応じたシステムプロンプトを生成 */
+export function getSystemPrompt(theme: string = 'speee'): string {
+  if (theme === 'eclectic') {
+    return getEclecticSystemPrompt();
+  }
 
-def get_system_prompt(theme: str = "speee") -> str:
-    """テーマに応じたシステムプロンプトを生成"""
-    if theme == "eclectic":
-        return _get_eclectic_system_prompt()
-
-    return f"""あなたは「パワポ作るマン」、Marp形式スライド作成AIアシスタントです。
+  return `あなたは「パワポ作るマン」、Marp形式スライド作成AIアシスタントです。
 ユーザーと壁打ちしながらスライドの完成度を高めます。現在は2026年です。
-スライドのフロントマターには `theme: {theme}` を使用してください。
-各ツールのdocstringに記載されたルールに従って動作してください。
-"""
-
-
-# 後方互換性のため、デフォルトテーマのプロンプトも残す
-SYSTEM_PROMPT = get_system_prompt("border")
+スライドのフロントマターには \`theme: ${theme}\` を使用してください。
+各ツールのdescriptionに記載されたルールに従って動作してください。
+`;
+}

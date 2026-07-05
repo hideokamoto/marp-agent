@@ -32,8 +32,8 @@ npm run build
 # テスト（フロントエンド）
 npm run test
 
-# テスト（バックエンド）
-python -m pytest tests/
+# テスト（バックエンド: エージェントランタイム）
+npm test --prefix amplify/agent/runtime
 ```
 
 ## アーキテクチャ
@@ -41,9 +41,10 @@ python -m pytest tests/
 ```
 [ブラウザ] ←→ [React + Tailwind] ←SSE→ [AgentCore Runtime]
                                               │
-                                              ├── Strands Agent (Python)
-                                              ├── Claude Sonnet 4.5 / Opus 4.6
-                                              └── Marp CLI (PDF/PPTX/編集可能PPTX変換)
+                                              ├── Mastra Agent (TypeScript / Node 22)
+                                              ├── Claude Sonnet 4.6 / Opus 4.6（@ai-sdk/amazon-bedrock）
+                                              ├── Marp CLI (PDF/PPTX/編集可能PPTX変換)
+                                              └── playwright-core + Chromium（折衷デッキのレンダリング）
 ```
 
 ### ディレクトリ構成
@@ -60,19 +61,21 @@ python -m pytest tests/
 | `amplify/` | バックエンド定義（CDK） |
 | `amplify/backend.ts` | エントリポイント（Auth, AgentCore, S3統合） |
 | `amplify/agent/resource.ts` | AgentCore Runtime定義 |
-| `amplify/agent/runtime/` | Pythonエージェント本体 |
-| `amplify/agent/runtime/tools/` | ツール定義（output_slide, output_deck, web_search, generate_tweet_url, http_request) |
-| `amplify/agent/runtime/exports/` | PDF/PPTX変換（slide_exporter, deck_exporter, render_deck.mjs） |
+| `amplify/agent/runtime/` | エージェント本体（Mastra + TypeScript、独立したnpmパッケージ） |
+| `amplify/agent/runtime/src/server.ts` | AgentCore HTTPコントラクト実装（/invocations SSE, /ping） |
+| `amplify/agent/runtime/src/invoke.ts` | アクションルーティング（chat / export_* / share_slide） |
+| `amplify/agent/runtime/src/tools/` | ツール定義（outputSlide, outputDeck, webSearch, generateTweet, httpRequest） |
+| `amplify/agent/runtime/src/exports/` | PDF/PPTX変換（slideExporter=Marp CLI, deckExporter=playwright-core+pptxgenjs+pdf-lib） |
+| `amplify/agent/runtime/src/sharing/` | 共有機能（s3Uploader） |
 | `amplify/agent/runtime/decks/eclectic/` | 折衷デッキアセット（deckdeckリポジトリ由来のテンプレート・ランタイム） |
-| `amplify/agent/runtime/session/` | セッション管理（manager） |
-| `amplify/agent/runtime/sharing/` | 共有機能（s3_uploader） |
+| `amplify/agent/runtime/tests/` | ランタイムのユニットテスト（vitest） |
 | `amplify/storage/resource.ts` | 共有スライド用S3+CloudFront |
 | `docs/knowledge/` | 詳細なナレッジベース（下記参照） |
 
 ### 主要な技術スタック
 
 - **フロントエンド**: React 19 + Vite + Tailwind CSS v4
-- **バックエンド**: Bedrock AgentCore + Strands Agents (Python)
+- **バックエンド**: Bedrock AgentCore + Mastra (TypeScript / Node 22)
 - **認証**: Cognito（Amplify UI React）
 - **IaC**: AWS CDK（Amplify経由）
 
@@ -82,8 +85,9 @@ python -m pytest tests/
 
 | ファイル | 内容 |
 |----------|------|
-| [setup.md](docs/knowledge/setup.md) | 使用ライブラリ、Python環境管理（uv） |
-| [backend.md](docs/knowledge/backend.md) | AgentCore SDK、Strands Agents、セッション管理、Observability |
+| [setup.md](docs/knowledge/setup.md) | 使用ライブラリ、Python環境管理（uv）※旧ランタイム時代の記録含む |
+| [mastra-runtime.md](docs/knowledge/mastra-runtime.md) | 現行ランタイム（Mastra + TypeScript）の構成・AgentCoreコントラクト・移行対応表 |
+| [backend.md](docs/knowledge/backend.md) | AgentCore SDK、Strands Agents、セッション管理、Observability（旧Python時代の記録） |
 | [cdk.md](docs/knowledge/cdk.md) | AgentCore CDK、Hotswap、deploy-time-build |
 | [marp.md](docs/knowledge/marp.md) | Marp CLI、テーマ、Marp Core |
 | [eclectic.md](docs/knowledge/eclectic.md) | 折衷デッキ（Claude Designスタイル）の生成・エクスポート・deckdeck連携 |

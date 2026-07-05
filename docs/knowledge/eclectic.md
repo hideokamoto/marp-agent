@@ -21,8 +21,8 @@ Marpマークダウンではなく、17種のテンプレートに基づく**HTM
 
 | 形式 | 判定 | 生成ツール | エクスポート |
 |------|------|-----------|-------------|
-| Marpマークダウン | 先頭が `<` 以外 | `output_slide` | Marp CLI |
-| 折衷HTMLデッキ | 先頭が `<`（`is_deck_source` / `isDeckHtml`） | `output_deck` | `deck_exporter` |
+| Marpマークダウン | 先頭が `<` 以外 | `output_slide` | Marp CLI（slideExporter.ts） |
+| 折衷HTMLデッキ | 先頭が `<`（`isDeckSource` / `isDeckHtml`） | `output_deck` | deckExporter.ts |
 
 形式判定はテーマ値ではなく**内容ベース**（生成後にテーマを切り替えても壊れないように）。
 
@@ -31,10 +31,9 @@ Marpマークダウンではなく、17種のテンプレートに基づく**HTM
 | パス | 内容 |
 |------|------|
 | `amplify/agent/runtime/decks/eclectic/` | deckdeck由来のアセット（deck-shell.html, deck.css, deck.js, slide-blocks.html） |
-| `amplify/agent/runtime/tools/output_deck.py` | デッキ出力ツール（構造・セキュリティ検証付き） |
-| `amplify/agent/runtime/config.py` | `_get_eclectic_system_prompt()`（デザインシステム＋テンプレートカタログ＋全ブロックを含む） |
-| `amplify/agent/runtime/exports/deck_exporter.py` | HTML組み立て・PNG/PPTX/PDF/サムネイル生成 |
-| `amplify/agent/runtime/exports/render_deck.mjs` | playwright-core + 同梱Chromiumで各スライドをPNG化 |
+| `amplify/agent/runtime/src/tools/outputDeck.ts` | デッキ出力ツール（構造・セキュリティ検証付き） |
+| `amplify/agent/runtime/src/config.ts` | 折衷用システムプロンプト（デザインシステム＋テンプレートカタログ＋全ブロックを含む） |
+| `amplify/agent/runtime/src/exports/deckExporter.ts` | HTML組み立て・playwright-core+Chromiumで各スライドをPNG化・PPTX（pptxgenjs）/PDF（pdf-lib）/サムネイル生成 |
 | `src/components/EclecticPreview.tsx` | プレビュー（ResizeObserverで1920×1080をスケーリング） |
 | `src/utils/deckFormat.ts` | 形式判定・section抽出 |
 
@@ -47,11 +46,12 @@ Marpマークダウンではなく、17種のテンプレートに基づく**HTM
 ## 制約・注意点
 
 - **編集可能PPTXは未対応**（スライドは全面画像。フロントでもボタン非表示、バックエンドでもエラー返却）
-- システムプロンプトに約50KBのテンプレートブロックを含むため、**プロンプトキャッシュ（cache_prompt）が前提**
+- システムプロンプトに約50KBのテンプレートブロックを含む。プロンプトキャッシュは未設定（TODO、
+  [mastra-runtime.md](mastra-runtime.md) 参照）
 - Webフォント（Shippori Mincho / Zen Kaku Gothic New）はGoogle Fontsから読み込む。
   ランタイムがオフラインの場合はフォールバックフォントでレンダリングされる
-- Dockerイメージには `playwright-core`（ブラウザ同梱なし、aptのChromiumを使用）と
-  `python-pptx` / `img2pdf` が必要（Dockerfile / requirements.txt に追加済み）
+- レンダリングは `playwright-core`（ブラウザ同梱なし、aptのChromiumを使用）、
+  PPTXは `pptxgenjs`、PDFは `pdf-lib` で生成（すべてランタイムのpackage.jsonに含まれる）
 
 ## deckdeckリポジトリとの同期
 
