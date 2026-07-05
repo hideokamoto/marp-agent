@@ -13,8 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && fc-cache -fv
 
-# Marp CLI をインストール
-RUN npm install -g @marp-team/marp-cli
+# Marp CLI と Playwright（折衷デッキのレンダリング用、ブラウザは同梱のChromiumを使用）をインストール
+RUN npm install -g @marp-team/marp-cli playwright-core
 
 # Puppeteer の Chromium パス設定
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
@@ -33,6 +33,9 @@ COPY tools/ ./tools/
 COPY exports/ ./exports/
 COPY sharing/ ./sharing/
 COPY session/ ./session/
+
+# 折衷デッキのアセット（シェル・CSS・JS・テンプレートブロック）をコピー
+COPY decks/ ./decks/
 
 EXPOSE 8080
 

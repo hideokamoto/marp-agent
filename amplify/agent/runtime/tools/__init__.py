@@ -2,6 +2,7 @@
 
 from .web_search import web_search, tavily_clients
 from .output_slide import output_slide, get_generated_markdown, reset_generated_markdown
+from .output_deck import output_deck, reset_deck_retry_count
 from .generate_tweet import generate_tweet_url, get_generated_tweet_url, reset_generated_tweet_url
 from .http_request import http_request
 
@@ -9,6 +10,8 @@ __all__ = [
     "web_search",
     "tavily_clients",
     "output_slide",
+    "output_deck",
+    "reset_deck_retry_count",
     "get_generated_markdown",
     "reset_generated_markdown",
     "generate_tweet_url",

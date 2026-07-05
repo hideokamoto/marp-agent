@@ -4,3 +4,5 @@ strands-agents-tools
 aws-opentelemetry-distro
 tavily-python
 pdfplumber
+python-pptx
+img2pdf

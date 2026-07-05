@@ -6,9 +6,12 @@ import borderTheme from '../themes/border.css?raw';
 import gradientTheme from '../themes/gradient.css?raw';
 import beamTheme from '../themes/beam.css?raw';
 import speeeTheme from '../themes/speee.css?raw';
+import { EclecticPreview } from './EclecticPreview';
+import { isDeckHtml } from '../utils/deckFormat';
 
-// テーマ定義
+// テーマ定義（eclecticはMarpテーマではなく折衷HTMLデッキ形式）
 export const THEMES = [
+  { id: 'eclectic', name: '折衷（Claude Design）', css: '' },
   { id: 'speee', name: 'Speee', css: speeeTheme },
   { id: 'border', name: 'Border', css: borderTheme },
   { id: 'gradient', name: 'Gradient', css: gradientTheme },
@@ -61,9 +64,12 @@ export function SlidePreview({ markdown, selectedTheme, onThemeChange, onDownloa
     };
   }, [isDropdownOpen]);
 
-  // マークダウンにテーマ指定を注入
+  // 現在のスライドソースが折衷デッキ（HTML）かどうか
+  const isDeck = useMemo(() => isDeckHtml(markdown), [markdown]);
+
+  // マークダウンにテーマ指定を注入（Marp形式のみ）
   const markdownWithTheme = useMemo(() => {
-    if (!markdown) return '';
+    if (!markdown || isDeck) return '';
 
     // 旧スタイルのインラインディレクティブを統一クラスに正規化
     let normalized = markdown;
@@ -92,10 +98,10 @@ export function SlidePreview({ markdown, selectedTheme, onThemeChange, onDownloa
       // フロントマターがない場合は追加
       return `---\ntheme: ${selectedTheme}\n---\n\n${normalized}`;
     }
-  }, [markdown, selectedTheme]);
+  }, [markdown, selectedTheme, isDeck]);
 
   const { slides, css } = useMemo(() => {
-    if (!markdownWithTheme) return { slides: [], css: '' };
+    if (!markdownWithTheme || isDeck) return { slides: [], css: '' };
 
     try {
       const marp = new Marp();
@@ -129,7 +135,9 @@ export function SlidePreview({ markdown, selectedTheme, onThemeChange, onDownloa
       console.error('Marp render error:', error);
       return { slides: [], css: '' };
     }
-  }, [markdownWithTheme]);
+  }, [markdownWithTheme, isDeck]);
+
+  const hasSlides = isDeck || slides.length > 0;
 
   if (!markdown) {
     return (
@@ -172,13 +180,13 @@ export function SlidePreview({ markdown, selectedTheme, onThemeChange, onDownloa
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              disabled={isDownloading || slides.length === 0}
+              disabled={isDownloading || !hasSlides}
               className="btn-brand text-white px-4 py-2 rounded-lg flex items-center gap-2"
             >
               {isDownloading ? 'ダウンロード中...' : 'エクスポート'}
               {!isDownloading && <span className="text-xs">▼</span>}
             </button>
-            {isDropdownOpen && !isDownloading && slides.length > 0 && (
+            {isDropdownOpen && !isDownloading && hasSlides && (
               <div className="absolute right-0 top-full mt-1 bg-white border rounded-lg shadow-lg z-10 min-w-[160px]">
                 <button
                   onClick={() => {
@@ -198,15 +206,17 @@ export function SlidePreview({ markdown, selectedTheme, onThemeChange, onDownloa
                 >
                   PPTX形式（編集不可、再現度100%）
                 </button>
-                <button
-                  onClick={() => {
-                    setIsDropdownOpen(false);
-                    onDownloadEditablePptx(selectedTheme);
-                  }}
-                  className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 active:bg-gray-200 text-left border-t whitespace-nowrap"
-                >
-                  <span>PPTX形式（編集可能、崩れあり）</span>
-                </button>
+                {!isDeck && (
+                  <button
+                    onClick={() => {
+                      setIsDropdownOpen(false);
+                      onDownloadEditablePptx(selectedTheme);
+                    }}
+                    className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 active:bg-gray-200 text-left border-t whitespace-nowrap"
+                  >
+                    <span>PPTX形式（編集可能、崩れあり）</span>
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     setIsDropdownOpen(false);
@@ -224,6 +234,10 @@ export function SlidePreview({ markdown, selectedTheme, onThemeChange, onDownloa
 
       {/* スライド一覧 */}
       <div ref={containerRef} className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-4">
+        {isDeck ? (
+          <EclecticPreview source={markdown} />
+        ) : (
+        <>
         <style>{css}</style>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {slides.map((slide) => (
@@ -243,6 +257,8 @@ export function SlidePreview({ markdown, selectedTheme, onThemeChange, onDownloa
             </div>
           ))}
         </div>
+        </>
+        )}
       </div>
     </div>
   );

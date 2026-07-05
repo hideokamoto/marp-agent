@@ -163,6 +163,12 @@ def get_generated_markdown() -> str | None:
     return _generated_markdown
 
 
+def set_generated_output(content: str) -> None:
+    """生成済みスライドソースをセット（output_deck等の他ツールと出力経路を共有）"""
+    global _generated_markdown
+    _generated_markdown = content
+
+
 def reset_generated_markdown() -> None:
     """マークダウンをリセット"""
     global _generated_markdown, _overflow_retry_count

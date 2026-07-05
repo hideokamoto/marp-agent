@@ -5,7 +5,7 @@ from strands.agent.conversation_manager import SlidingWindowConversationManager
 from strands.models import BedrockModel
 
 from config import get_model_config, get_system_prompt
-from tools import web_search, output_slide, generate_tweet_url, http_request
+from tools import web_search, output_slide, output_deck, generate_tweet_url, http_request
 
 # セッションごとのAgentインスタンスを管理（会話履歴保持用）
 _agent_sessions: dict[str, Agent] = {}
@@ -27,6 +27,12 @@ def _create_bedrock_model(model_type: str = "sonnet") -> BedrockModel:
         )
 
 
+def _get_tools(theme: str) -> list:
+    """テーマに応じたツールリストを返す（折衷はHTMLデッキ、それ以外はMarp）"""
+    slide_tool = output_deck if theme == "eclectic" else output_slide
+    return [web_search, slide_tool, generate_tweet_url, http_request]
+
+
 def get_or_create_agent(session_id: str | None, model_type: str = "sonnet", theme: str = "border") -> Agent:
     """セッションIDとモデルタイプとテーマに対応するAgentを取得または作成"""
     system_prompt = get_system_prompt(theme)
@@ -39,7 +45,7 @@ def get_or_create_agent(session_id: str | None, model_type: str = "sonnet", them
         return Agent(
             model=_create_bedrock_model(model_type),
             system_prompt=system_prompt,
-            tools=[web_search, output_slide, generate_tweet_url, http_request],
+            tools=_get_tools(theme),
             conversation_manager=_conversation_manager,
         )
 
@@ -51,7 +57,7 @@ def get_or_create_agent(session_id: str | None, model_type: str = "sonnet", them
     agent = Agent(
         model=_create_bedrock_model(model_type),
         system_prompt=system_prompt,
-        tools=[web_search, output_slide, generate_tweet_url, http_request],
+        tools=_get_tools(theme),
         conversation_manager=_conversation_manager,
     )
     _agent_sessions[cache_key] = agent

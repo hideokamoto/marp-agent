@@ -4,7 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-「パワポ作るマン」- AIがMarp形式でスライドを自動生成するWebアプリ。AWS AmplifyとBedrock AgentCoreでフルサーバーレス構築。
+「パワポ作るマン」- AIがスライドを自動生成するWebアプリ。AWS AmplifyとBedrock AgentCoreでフルサーバーレス構築。
+スライド形式は2系統：Marp形式（テーマ: speee/border/gradient/beam）と、折衷HTMLデッキ（テーマ: eclectic、Claude Designスタイル。詳細は [docs/knowledge/eclectic.md](docs/knowledge/eclectic.md)）。
 
 ## 開発コマンド
 
@@ -60,8 +61,9 @@ python -m pytest tests/
 | `amplify/backend.ts` | エントリポイント（Auth, AgentCore, S3統合） |
 | `amplify/agent/resource.ts` | AgentCore Runtime定義 |
 | `amplify/agent/runtime/` | Pythonエージェント本体 |
-| `amplify/agent/runtime/tools/` | ツール定義（output_slide, web_search, generate_tweet_url, http_request） |
-| `amplify/agent/runtime/exports/` | PDF/PPTX変換（slide_exporter） |
+| `amplify/agent/runtime/tools/` | ツール定義（output_slide, output_deck, web_search, generate_tweet_url, http_request) |
+| `amplify/agent/runtime/exports/` | PDF/PPTX変換（slide_exporter, deck_exporter, render_deck.mjs） |
+| `amplify/agent/runtime/decks/eclectic/` | 折衷デッキアセット（deckdeckリポジトリ由来のテンプレート・ランタイム） |
 | `amplify/agent/runtime/session/` | セッション管理（manager） |
 | `amplify/agent/runtime/sharing/` | 共有機能（s3_uploader） |
 | `amplify/storage/resource.ts` | 共有スライド用S3+CloudFront |
@@ -84,6 +86,7 @@ python -m pytest tests/
 | [backend.md](docs/knowledge/backend.md) | AgentCore SDK、Strands Agents、セッション管理、Observability |
 | [cdk.md](docs/knowledge/cdk.md) | AgentCore CDK、Hotswap、deploy-time-build |
 | [marp.md](docs/knowledge/marp.md) | Marp CLI、テーマ、Marp Core |
+| [eclectic.md](docs/knowledge/eclectic.md) | 折衷デッキ（Claude Designスタイル）の生成・エクスポート・deckdeck連携 |
 | [frontend.md](docs/knowledge/frontend.md) | React、Tailwind CSS、フロントエンド構成 |
 | [amplify.md](docs/knowledge/amplify.md) | Amplify Gen2、Cognito認証、ビルド設定 |
 | [features.md](docs/knowledge/features.md) | API接続、シェア機能、共有機能、ローカル開発 |

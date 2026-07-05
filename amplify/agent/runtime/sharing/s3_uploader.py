@@ -8,7 +8,14 @@ from datetime import datetime, timedelta, UTC
 
 import boto3
 
-from exports import generate_standalone_html, generate_thumbnail
+from exports import (
+    generate_standalone_html,
+    generate_thumbnail,
+    is_deck_source,
+    extract_deck_title,
+    generate_deck_standalone_html,
+    generate_deck_thumbnail,
+)
 
 # S3クライアント（遅延初期化）
 _s3_client = None
@@ -63,6 +70,9 @@ def share_slide(markdown: str, theme: str = 'border') -> dict:
     if not bucket_name or not public_domain:
         raise RuntimeError("共有機能が設定されていません（環境変数未設定）")
 
+    # スライドソースの形式判定（折衷=HTMLデッキ / それ以外=Marpマークダウン）
+    is_deck = is_deck_source(markdown)
+
     # スライドID生成（UUID v4）
     slide_id = str(uuid.uuid4())
     slide_path = slide_id
@@ -71,7 +81,10 @@ def share_slide(markdown: str, theme: str = 'border') -> dict:
     # サムネイル生成・アップロード
     thumbnail_url = None
     try:
-        thumbnail_bytes = generate_thumbnail(markdown, theme)
+        if is_deck:
+            thumbnail_bytes = generate_deck_thumbnail(markdown)
+        else:
+            thumbnail_bytes = generate_thumbnail(markdown, theme)
         thumbnail_key = f"{slide_path}/thumbnail.png"
         s3_client.put_object(
             Bucket=bucket_name,
@@ -89,11 +102,17 @@ def share_slide(markdown: str, theme: str = 'border') -> dict:
     share_url = f"https://{public_domain}/{slide_path}/index.html"
 
     # HTML生成
-    html_content = generate_standalone_html(markdown, theme)
+    if is_deck:
+        html_content = generate_deck_standalone_html(markdown)
+    else:
+        html_content = generate_standalone_html(markdown, theme)
 
     # OGPタグ挿入（サムネイルがある場合のみ）
     if thumbnail_url:
-        title = _extract_slide_title(markdown) or "スライド"
+        if is_deck:
+            title = extract_deck_title(markdown) or "スライド"
+        else:
+            title = _extract_slide_title(markdown) or "スライド"
         html_content = _inject_ogp_tags(html_content, title, thumbnail_url, share_url)
 
     # S3にHTMLアップロード

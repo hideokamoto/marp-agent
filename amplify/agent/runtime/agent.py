@@ -14,11 +14,19 @@ from tools import (
     generate_tweet_url,
     get_generated_markdown,
     reset_generated_markdown,
+    reset_deck_retry_count,
     get_generated_tweet_url,
     reset_generated_tweet_url,
 )
 from tools.web_search import get_last_search_result, reset_last_search_result
-from exports import generate_pdf, generate_pptx, generate_editable_pptx
+from exports import (
+    generate_pdf,
+    generate_pptx,
+    generate_editable_pptx,
+    is_deck_source,
+    generate_deck_pdf,
+    generate_deck_pptx,
+)
 from sharing import share_slide
 from session import get_or_create_agent
 
@@ -68,6 +76,7 @@ async def invoke(payload, context=None):
     """エージェント実行（ストリーミング対応）"""
     # グローバル状態をリセット
     reset_generated_markdown()
+    reset_deck_retry_count()
     reset_generated_tweet_url()
     reset_last_search_result()
 
@@ -79,12 +88,18 @@ async def invoke(payload, context=None):
     theme = payload.get("theme", "border")
     reference_file = payload.get("reference_file")
 
+    # スライドソースの形式判定（折衷=HTMLデッキ / それ以外=Marpマークダウン）
+    is_deck = bool(current_markdown) and is_deck_source(current_markdown)
+
     # PDF出力
     if action == "export_pdf" and current_markdown:
         try:
-            print(f"[INFO] PDF export started (theme={theme})")
+            print(f"[INFO] PDF export started (theme={theme}, deck={is_deck})")
             loop = asyncio.get_event_loop()
-            task = loop.run_in_executor(None, generate_pdf, current_markdown, theme)
+            if is_deck:
+                task = loop.run_in_executor(None, generate_deck_pdf, current_markdown)
+            else:
+                task = loop.run_in_executor(None, generate_pdf, current_markdown, theme)
             async for event in _wait_with_keepalive(task, "PDF"):
                 yield event
             pdf_bytes = task.result()
@@ -99,9 +114,12 @@ async def invoke(payload, context=None):
     # PPTX出力
     if action == "export_pptx" and current_markdown:
         try:
-            print(f"[INFO] PPTX export started (theme={theme})")
+            print(f"[INFO] PPTX export started (theme={theme}, deck={is_deck})")
             loop = asyncio.get_event_loop()
-            task = loop.run_in_executor(None, generate_pptx, current_markdown, theme)
+            if is_deck:
+                task = loop.run_in_executor(None, generate_deck_pptx, current_markdown)
+            else:
+                task = loop.run_in_executor(None, generate_pptx, current_markdown, theme)
             async for event in _wait_with_keepalive(task, "PPTX"):
                 yield event
             pptx_bytes = task.result()
@@ -115,6 +133,9 @@ async def invoke(payload, context=None):
 
     # 編集可能PPTX出力（実験的機能）
     if action == "export_pptx_editable" and current_markdown:
+        if is_deck:
+            yield {"type": "error", "message": "折衷デザインでは編集可能PPTXは未対応です（PPTX形式をご利用ください）"}
+            return
         try:
             print(f"[INFO] Editable PPTX export started (theme={theme})")
             loop = asyncio.get_event_loop()

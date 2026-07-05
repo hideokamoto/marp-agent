@@ -198,6 +198,28 @@ html, body {
   list-style-type: square !important;
 }
 
+/* 折衷デッキプレビュー: スライドは1920×1080設計のインラインスタイルを持つHTML */
+.eclectic-slide-canvas {
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.eclectic-slide-canvas section {
+  display: block;
+  width: 1920px;
+  height: 1080px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.eclectic-slide-canvas .mincho {
+  font-family: 'Shippori Mincho', serif;
+}
+
+.eclectic-slide-canvas .mono {
+  font-family: 'SF Mono', ui-monospace, 'Roboto Mono', monospace;
+}
+
 /* 豆知識のフェードインアニメーション */
 .animate-fade-in {
   animation: fadeIn 0.5s ease-in-out;

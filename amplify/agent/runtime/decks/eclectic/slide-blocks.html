@@ -1,0 +1,466 @@
+<!-- ==========================================================================
+     tech-slides — slide block catalog (折衷 技術スライド集)
+     Each block below is one <div class="deck-slide"><section>…</section></div>.
+     Copy the block whose layout fits your content, paste it into the deck shell
+     between <!-- SLIDES --> markers, and replace ONLY the text / numbers.
+     Keep every inline style, color and structure intact — that is the design.
+
+     Block order == template order (see references/templates.md):
+      01 タイトル            02 アジェンダ          03 セクション扉
+      04 ステートメント      05 主要指標(大数字)    06 指標3点
+      07 アーキテクチャ図    08 比較(Before/After)  09 コード
+      10 機能リスト          11 表                  12 ロードマップ
+      13 引用                14 学びのサイクル      15 Inner/Outer ループ
+      16 速い内側・詰まる外側 17 まとめ／Q&A
+     ========================================================================== -->
+
+
+      <!-- 01 TITLE -->
+      <div class="deck-slide">
+        <section data-label="タイトル" data-speaker-notes="表紙。演題・登壇者・日付・所属を置く定型。明朝の大見出し＋藍青の細バーで落ち着いた導入に。" style="background:#F5F2EC;padding:120px 110px;display:flex;flex-direction:column;justify-content:space-between;box-sizing:border-box;">
+          <div style="display:flex;align-items:center;gap:16px;">
+            <div style="width:26px;height:26px;border-radius:7px;background:#2F5375;"></div>
+            <span class="mono" style="font-size:24px;letter-spacing:3px;color:#7B7E82;text-transform:uppercase;">Tech Talk · 2026</span>
+          </div>
+          <div>
+            <div style="width:80px;height:6px;background:#E0A63C;border-radius:3px;margin-bottom:40px;"></div>
+            <h1 class="mincho" style="font-weight:600;font-size:104px;line-height:1.2;margin:0;color:#23262B;letter-spacing:0.01em;">分散システムにおける<br>可観測性の実践</h1>
+            <p style="font-size:36px;color:#5C5F63;margin:44px 0 0;line-height:1.6;">運用から逆算するトレーシング設計</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:20px;font-size:28px;color:#5C5F63;">
+            <span style="color:#23262B;font-weight:500;">山田 太郎</span>
+            <span style="width:6px;height:6px;border-radius:50%;background:#C9C2B4;"></span>
+            <span>Platform Engineering</span>
+            <span style="width:6px;height:6px;border-radius:50%;background:#C9C2B4;"></span>
+            <span class="mono" style="font-size:24px;">YYYY.MM.DD</span>
+          </div>
+        </section>
+      </div>
+
+      <!-- 02 AGENDA -->
+      <div class="deck-slide">
+        <section data-label="アジェンダ" data-speaker-notes="目次。番号＋項目の定型。左に大見出し、右に番号付きリスト。項目は5つ前後に絞る。" style="background:#F5F2EC;padding:100px 110px 80px;display:flex;gap:90px;box-sizing:border-box;">
+          <div style="flex:0 0 420px;display:flex;flex-direction:column;justify-content:flex-start;">
+            <span class="mono" style="font-size:24px;letter-spacing:3px;color:#B0A48F;text-transform:uppercase;">Agenda</span>
+            <h2 class="mincho" style="font-weight:600;font-size:80px;line-height:1.25;margin:24px 0 0;color:#23262B;">本日の<br>お話</h2>
+            <div style="width:64px;height:6px;background:#E0A63C;border-radius:3px;margin-top:40px;"></div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:8px;">
+            <div style="display:flex;align-items:baseline;gap:32px;padding:28px 0;border-bottom:1px solid #E4DED2;">
+              <span class="mono" style="font-size:30px;color:#2F5375;font-weight:500;">01</span>
+              <span style="font-size:38px;color:#23262B;">なぜ可観測性が難しいのか</span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:32px;padding:28px 0;border-bottom:1px solid #E4DED2;">
+              <span class="mono" style="font-size:30px;color:#2F5375;font-weight:500;">02</span>
+              <span style="font-size:38px;color:#23262B;">三本柱：ログ・メトリクス・トレース</span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:32px;padding:28px 0;border-bottom:1px solid #E4DED2;">
+              <span class="mono" style="font-size:30px;color:#2F5375;font-weight:500;">03</span>
+              <span style="font-size:38px;color:#23262B;">アーキテクチャと導入コスト</span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:32px;padding:28px 0;border-bottom:1px solid #E4DED2;">
+              <span class="mono" style="font-size:30px;color:#2F5375;font-weight:500;">04</span>
+              <span style="font-size:38px;color:#23262B;">導入後に見えた成果</span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:32px;padding:28px 0;">
+              <span class="mono" style="font-size:30px;color:#B0A48F;font-weight:500;">05</span>
+              <span style="font-size:38px;color:#7B7E82;">まとめと次の一歩</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 03 SECTION DIVIDER -->
+      <div class="deck-slide">
+        <section data-label="セクション扉" data-speaker-notes="章の区切り。ダーク藍青のベタ背景＋明朝白見出し＋大きな章番号。扉は全てこの見た目で統一する。" style="background:#16181C;padding:110px;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box;position:relative;overflow:hidden;">
+          <div class="mincho" style="position:absolute;right:60px;bottom:-60px;font-size:420px;line-height:1;color:#22262C;font-weight:600;">01</div>
+          <span class="mono" style="font-size:26px;letter-spacing:4px;color:#6E9BC0;text-transform:uppercase;position:relative;">Section 01</span>
+          <h2 class="mincho" style="font-weight:600;font-size:96px;line-height:1.25;margin:32px 0 0;color:#E9E7DF;position:relative;">なぜ可観測性が<br>難しいのか</h2>
+          <div style="width:80px;height:6px;background:#E0A63C;border-radius:3px;margin-top:44px;position:relative;"></div>
+        </section>
+      </div>
+
+      <!-- 04 BIG STATEMENT -->
+      <div class="deck-slide">
+        <section data-label="ステートメント" data-speaker-notes="主張を一文で置く定型。大きな明朝、キーワードだけ藍青。文字を詰めず、余白で語らせる。" style="background:#F5F2EC;padding:120px 140px;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box;">
+          <span class="mono" style="font-size:26px;letter-spacing:3px;color:#B0A48F;text-transform:uppercase;margin-bottom:48px;">The Problem</span>
+          <p class="mincho" style="font-size:76px;line-height:1.55;margin:0;color:#23262B;font-weight:500;max-width:1400px;">障害の大半は、<span style="color:#2F5375;">コードではなく</span><br>システムの<span style="color:#E0A63C;">つながり方</span>で起きる。</p>
+        </section>
+      </div>
+
+      <!-- 05 KEY METRIC -->
+      <div class="deck-slide">
+        <section data-label="主要指標（大数字）" data-speaker-notes="1つの数字を主役にする定型。巨大数字＋短いラベル＋補足一行。数値の桁は明朝でも映える。" style="background:#F5F2EC;padding:100px 110px;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box;">
+          <span class="mono" style="font-size:26px;letter-spacing:3px;color:#B0A48F;text-transform:uppercase;">平均障害復旧時間 (MTTR)</span>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-top:20px;">
+            <span class="mincho" style="font-size:280px;line-height:0.9;color:#2F5375;font-weight:600;">68</span>
+            <span class="mincho" style="font-size:120px;color:#2F5375;font-weight:500;">%</span>
+            <span style="font-size:56px;color:#3E7A55;font-weight:500;margin-left:40px;align-self:center;">短縮</span>
+          </div>
+          <p style="font-size:38px;color:#5C5F63;margin:48px 0 0;line-height:1.6;max-width:1200px;">トレース基盤の導入により、原因特定にかかる時間が <span class="mono" style="color:#23262B;">42分 → 13分</span> に。</p>
+        </section>
+      </div>
+
+      <!-- 06 STAT TRIO -->
+      <div class="deck-slide">
+        <section data-label="指標3点" data-speaker-notes="関連する数字を3つ並べる定型。等幅グリッド、各カードは境界線で分ける。色は藍青で統一し賑やかにしない。" style="background:#F5F2EC;padding:100px 110px 80px;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box;">
+          <h2 class="mincho" style="font-weight:600;font-size:64px;margin:0 0 64px;color:#23262B;">導入から半年の変化</h2>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid #E4DED2;border-bottom:1px solid #E4DED2;">
+            <div style="padding:56px 48px 56px 0;border-right:1px solid #E4DED2;">
+              <div class="mincho" style="font-size:132px;line-height:1;color:#2F5375;font-weight:600;">3.2<span style="font-size:60px;">×</span></div>
+              <div style="font-size:32px;color:#5C5F63;margin-top:20px;line-height:1.5;">障害検知の速度</div>
+            </div>
+            <div style="padding:56px 48px;border-right:1px solid #E4DED2;">
+              <div class="mincho" style="font-size:132px;line-height:1;color:#2F5375;font-weight:600;">-41<span style="font-size:60px;">%</span></div>
+              <div style="font-size:32px;color:#5C5F63;margin-top:20px;line-height:1.5;">オンコール呼び出し</div>
+            </div>
+            <div style="padding:56px 0 56px 48px;">
+              <div class="mincho" style="font-size:132px;line-height:1;color:#2F5375;font-weight:600;">99.9<span style="font-size:60px;">%</span></div>
+              <div style="font-size:32px;color:#5C5F63;margin-top:20px;line-height:1.5;">主要APIの可用性</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 07 ARCHITECTURE DIAGRAM -->
+      <div class="deck-slide">
+        <section data-label="アーキテクチャ図" data-speaker-notes="構成図の定型。矩形ノード＋矢印。ノードは藍青枠、データストアはサーフェス、収集層を山吹で強調。" style="background:#F5F2EC;padding:100px 110px 80px;display:flex;flex-direction:column;box-sizing:border-box;">
+          <h2 class="mincho" style="font-weight:600;font-size:60px;margin:0 0 12px;color:#23262B;">テレメトリの流れ</h2>
+          <p style="font-size:30px;color:#7B7E82;margin:0 0 60px;">各サービスから収集層を経て、単一のバックエンドへ集約する。</p>
+          <div style="flex:1;display:flex;align-items:center;justify-content:space-between;gap:24px;">
+            <div style="display:flex;flex-direction:column;gap:20px;">
+              <div style="padding:28px 40px;background:#FFFFFF;border:2px solid #2F5375;border-radius:12px;font-size:30px;color:#23262B;text-align:center;min-width:240px;">API サービス</div>
+              <div style="padding:28px 40px;background:#FFFFFF;border:2px solid #2F5375;border-radius:12px;font-size:30px;color:#23262B;text-align:center;min-width:240px;">Worker</div>
+              <div style="padding:28px 40px;background:#FFFFFF;border:2px solid #2F5375;border-radius:12px;font-size:30px;color:#23262B;text-align:center;min-width:240px;">Web フロント</div>
+            </div>
+            <div class="mono" style="font-size:52px;color:#C9C2B4;">→</div>
+            <div style="padding:44px 48px;background:#FCF4E1;border:2px solid #E0A63C;border-radius:14px;text-align:center;">
+              <div class="mono" style="font-size:24px;letter-spacing:2px;color:#B07E1E;text-transform:uppercase;margin-bottom:12px;">Collector</div>
+              <div style="font-size:34px;color:#23262B;font-weight:500;">OpenTelemetry<br>収集エージェント</div>
+            </div>
+            <div class="mono" style="font-size:52px;color:#C9C2B4;">→</div>
+            <div style="display:flex;flex-direction:column;gap:20px;">
+              <div style="padding:26px 40px;background:#2F5375;border-radius:12px;font-size:30px;color:#FFFFFF;text-align:center;min-width:240px;">トレース DB</div>
+              <div style="padding:26px 40px;background:#2F5375;border-radius:12px;font-size:30px;color:#FFFFFF;text-align:center;min-width:240px;">メトリクス DB</div>
+              <div style="padding:26px 40px;background:#3E7A55;border-radius:12px;font-size:30px;color:#FFFFFF;text-align:center;min-width:240px;">ダッシュボード</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 08 COMPARISON -->
+      <div class="deck-slide">
+        <section data-label="比較（Before/After）" data-speaker-notes="2カラム比較の定型。左=現状（ニュートラル）、右=改善後（藍青）。見出しの位置と行数を左右で揃える。" style="background:#F5F2EC;padding:100px 110px 80px;display:flex;flex-direction:column;box-sizing:border-box;">
+          <h2 class="mincho" style="font-weight:600;font-size:60px;margin:0 0 56px;color:#23262B;">運用の現場はどう変わったか</h2>
+          <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:40px;">
+            <div style="background:#FFFFFF;border:1px solid #E4DED2;border-radius:16px;padding:56px;display:flex;flex-direction:column;">
+              <span class="mono" style="font-size:24px;letter-spacing:2px;color:#7B7E82;text-transform:uppercase;">Before</span>
+              <h3 style="font-size:40px;color:#23262B;margin:20px 0 40px;font-weight:700;">導入前</h3>
+              <div style="display:flex;flex-direction:column;gap:28px;">
+                <div style="display:flex;gap:20px;align-items:flex-start;"><span style="color:#B4553B;font-size:32px;line-height:1.3;">—</span><span style="font-size:32px;color:#5C5F63;line-height:1.5;">ログを grep で追い、原因特定に数時間</span></div>
+                <div style="display:flex;gap:20px;align-items:flex-start;"><span style="color:#B4553B;font-size:32px;line-height:1.3;">—</span><span style="font-size:32px;color:#5C5F63;line-height:1.5;">サービス跨ぎの経路が見えない</span></div>
+                <div style="display:flex;gap:20px;align-items:flex-start;"><span style="color:#B4553B;font-size:32px;line-height:1.3;">—</span><span style="font-size:32px;color:#5C5F63;line-height:1.5;">深夜のオンコールが属人的</span></div>
+              </div>
+            </div>
+            <div style="background:#2F5375;border-radius:16px;padding:56px;display:flex;flex-direction:column;">
+              <span class="mono" style="font-size:24px;letter-spacing:2px;color:#A9C4DE;text-transform:uppercase;">After</span>
+              <h3 style="font-size:40px;color:#FFFFFF;margin:20px 0 40px;font-weight:700;">導入後</h3>
+              <div style="display:flex;flex-direction:column;gap:28px;">
+                <div style="display:flex;gap:20px;align-items:flex-start;"><span style="color:#E0A63C;font-size:32px;line-height:1.3;">✓</span><span style="font-size:32px;color:#EDF1F6;line-height:1.5;">1リクエストを端から端まで追跡</span></div>
+                <div style="display:flex;gap:20px;align-items:flex-start;"><span style="color:#E0A63C;font-size:32px;line-height:1.3;">✓</span><span style="font-size:32px;color:#EDF1F6;line-height:1.5;">遅延の発生箇所が即座に分かる</span></div>
+                <div style="display:flex;gap:20px;align-items:flex-start;"><span style="color:#E0A63C;font-size:32px;line-height:1.3;">✓</span><span style="font-size:32px;color:#EDF1F6;line-height:1.5;">アラートに根拠のリンクが付く</span></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 09 CODE -->
+      <div class="deck-slide">
+        <section data-label="コード" data-speaker-notes="コード提示の定型。ダークなコード面＋等幅。左に説明、右にコード。色は最小限のシンタックスハイライトに留める。" style="background:#F5F2EC;padding:100px 110px 80px;display:flex;gap:70px;box-sizing:border-box;align-items:center;">
+          <div style="flex:0 0 460px;">
+            <span class="mono" style="font-size:24px;letter-spacing:3px;color:#B0A48F;text-transform:uppercase;">Instrumentation</span>
+            <h2 class="mincho" style="font-weight:600;font-size:60px;margin:24px 0 28px;color:#23262B;line-height:1.3;">計装は<br>数行で始まる</h2>
+            <p style="font-size:32px;color:#5C5F63;line-height:1.65;margin:0;">自動計装を有効にすれば、既存コードにほぼ手を入れずトレースが流れ始める。</p>
+          </div>
+          <div style="flex:1;background:#16181C;border-radius:16px;padding:48px 52px;box-shadow:0 24px 60px rgba(22,24,28,0.28);">
+            <div style="display:flex;gap:10px;margin-bottom:32px;"><span style="width:14px;height:14px;border-radius:50%;background:#3A3D44;"></span><span style="width:14px;height:14px;border-radius:50%;background:#3A3D44;"></span><span style="width:14px;height:14px;border-radius:50%;background:#3A3D44;"></span></div>
+            <div class="mono" style="font-size:30px;line-height:1.85;color:#E9E7DF;">
+              <div style="color:#7B8794;"># 収集エージェントを起動</div>
+              <div><span style="color:#6E9BC0;">from</span> otel <span style="color:#6E9BC0;">import</span> trace, auto</div>
+              <div style="height:26px;"></div>
+              <div>auto.<span style="color:#ECBE56;">instrument</span>(app)</div>
+              <div style="height:26px;"></div>
+              <div><span style="color:#6FB088;">@trace.span(</span><span style="color:#E0A63C;">"checkout"</span><span style="color:#6FB088;">)</span></div>
+              <div><span style="color:#6E9BC0;">def</span> <span style="color:#ECBE56;">checkout</span>(cart):</div>
+              <div>&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#6E9BC0;">return</span> pay(cart)</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 10 FEATURE BULLETS -->
+      <div class="deck-slide">
+        <section data-label="機能リスト" data-speaker-notes="要点3〜4点の定型。幾何アイコン＋見出し＋一行説明。アイコンは単色（藍青）で統一、面で色を足さない。" style="background:#F5F2EC;padding:100px 110px 80px;display:flex;flex-direction:column;box-sizing:border-box;">
+          <h2 class="mincho" style="font-weight:600;font-size:60px;margin:0 0 60px;color:#23262B;">設計で大事にした3点</h2>
+          <div style="flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:56px;align-content:center;">
+            <div>
+              <div style="width:76px;height:76px;border-radius:16px;background:#EAF0F5;display:flex;align-items:center;justify-content:center;margin-bottom:32px;"><div style="width:30px;height:30px;border:5px solid #2F5375;border-radius:8px;"></div></div>
+              <h3 style="font-size:38px;color:#23262B;margin:0 0 16px;font-weight:700;">低い導入コスト</h3>
+              <p style="font-size:30px;color:#5C5F63;line-height:1.6;margin:0;">自動計装で既存コードへの変更を最小化する。</p>
+            </div>
+            <div>
+              <div style="width:76px;height:76px;border-radius:16px;background:#EAF0F5;display:flex;align-items:center;justify-content:center;margin-bottom:32px;"><div style="width:34px;height:34px;border-radius:50%;border:5px solid #2F5375;"></div></div>
+              <h3 style="font-size:38px;color:#23262B;margin:0 0 16px;font-weight:700;">ベンダー非依存</h3>
+              <p style="font-size:30px;color:#5C5F63;line-height:1.6;margin:0;">OpenTelemetry 標準で収集し、出力先を後から選べる。</p>
+            </div>
+            <div>
+              <div style="width:76px;height:76px;border-radius:16px;background:#EAF0F5;display:flex;align-items:center;justify-content:center;margin-bottom:32px;"><div style="display:flex;gap:6px;align-items:flex-end;"><div style="width:8px;height:18px;background:#2F5375;border-radius:2px;"></div><div style="width:8px;height:30px;background:#2F5375;border-radius:2px;"></div><div style="width:8px;height:24px;background:#E0A63C;border-radius:2px;"></div></div></div>
+              <h3 style="font-size:38px;color:#23262B;margin:0 0 16px;font-weight:700;">運用者目線</h3>
+              <p style="font-size:30px;color:#5C5F63;line-height:1.6;margin:0;">アラートから原因の画面へ一直線で辿れる導線。</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 11 TABLE -->
+      <div class="deck-slide">
+        <section data-label="表" data-speaker-notes="比較表の定型。ヘッダー行は藍青、行は交互の淡い下地。数値列は等幅・右寄せ。推奨行だけ山吹の左バーで示す。" style="background:#F5F2EC;padding:100px 110px 80px;display:flex;flex-direction:column;box-sizing:border-box;">
+          <h2 class="mincho" style="font-weight:600;font-size:60px;margin:0 0 48px;color:#23262B;">収集方式の比較</h2>
+          <div style="border:1px solid #E4DED2;border-radius:14px;overflow:hidden;">
+            <div style="display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;background:#2F5375;">
+              <div style="padding:28px 40px;font-size:28px;color:#FFFFFF;font-weight:500;">方式</div>
+              <div style="padding:28px 32px;font-size:28px;color:#FFFFFF;font-weight:500;text-align:right;">導入コスト</div>
+              <div style="padding:28px 32px;font-size:28px;color:#FFFFFF;font-weight:500;text-align:right;">オーバーヘッド</div>
+              <div style="padding:28px 32px;font-size:28px;color:#FFFFFF;font-weight:500;text-align:right;">粒度</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;background:#FFFFFF;border-bottom:1px solid #EFE9DD;">
+              <div style="padding:30px 40px;font-size:30px;color:#23262B;">手動計装</div>
+              <div class="mono" style="padding:30px 32px;font-size:28px;color:#5C5F63;text-align:right;">高</div>
+              <div class="mono" style="padding:30px 32px;font-size:28px;color:#5C5F63;text-align:right;">低</div>
+              <div class="mono" style="padding:30px 32px;font-size:28px;color:#5C5F63;text-align:right;">細</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;background:#FBF6EA;border-bottom:1px solid #EFE9DD;border-left:5px solid #E0A63C;">
+              <div style="padding:30px 40px 30px 35px;font-size:30px;color:#23262B;font-weight:500;">自動計装 <span class="mono" style="font-size:22px;color:#B07E1E;">推奨</span></div>
+              <div class="mono" style="padding:30px 32px;font-size:28px;color:#23262B;text-align:right;">低</div>
+              <div class="mono" style="padding:30px 32px;font-size:28px;color:#23262B;text-align:right;">中</div>
+              <div class="mono" style="padding:30px 32px;font-size:28px;color:#23262B;text-align:right;">中</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;background:#FFFFFF;">
+              <div style="padding:30px 40px;font-size:30px;color:#23262B;">サイドカー方式</div>
+              <div class="mono" style="padding:30px 32px;font-size:28px;color:#5C5F63;text-align:right;">中</div>
+              <div class="mono" style="padding:30px 32px;font-size:28px;color:#5C5F63;text-align:right;">中</div>
+              <div class="mono" style="padding:30px 32px;font-size:28px;color:#5C5F63;text-align:right;">粗</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 12 TIMELINE -->
+      <div class="deck-slide">
+        <section data-label="ロードマップ" data-speaker-notes="時系列・段階の定型。水平の軸＋ノード。現在地までを藍青、以降をニュートラルで表す。フェーズは4つ前後。" style="background:#F5F2EC;padding:100px 110px 80px;display:flex;flex-direction:column;box-sizing:border-box;">
+          <h2 class="mincho" style="font-weight:600;font-size:60px;margin:0 0 90px;color:#23262B;">導入ロードマップ</h2>
+          <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+            <div style="position:relative;height:4px;background:#E4DED2;margin:0 40px;">
+              <div style="position:absolute;left:0;top:0;height:4px;width:62%;background:#2F5375;"></div>
+              <div style="position:absolute;left:0;top:-8px;width:20px;height:20px;border-radius:50%;background:#2F5375;"></div>
+              <div style="position:absolute;left:33%;top:-8px;width:20px;height:20px;border-radius:50%;background:#2F5375;"></div>
+              <div style="position:absolute;left:62%;top:-10px;width:24px;height:24px;border-radius:50%;background:#E0A63C;border:3px solid #F5F2EC;box-shadow:0 0 0 3px #E0A63C;"></div>
+              <div style="position:absolute;left:calc(100% - 20px);top:-8px;width:20px;height:20px;border-radius:50%;background:#C9C2B4;"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);margin-top:44px;">
+              <div style="padding-right:40px;"><div class="mono" style="font-size:26px;color:#2F5375;letter-spacing:1px;">Q1</div><div style="font-size:34px;color:#23262B;margin-top:12px;font-weight:500;">PoC・技術選定</div><div style="font-size:26px;color:#7B7E82;margin-top:8px;line-height:1.5;">1サービスで検証</div></div>
+              <div style="padding-right:40px;"><div class="mono" style="font-size:26px;color:#2F5375;letter-spacing:1px;">Q2</div><div style="font-size:34px;color:#23262B;margin-top:12px;font-weight:500;">基盤構築</div><div style="font-size:26px;color:#7B7E82;margin-top:8px;line-height:1.5;">収集・保存の整備</div></div>
+              <div style="padding-right:40px;"><div class="mono" style="font-size:26px;color:#B07E1E;letter-spacing:1px;">Q3 · 現在</div><div style="font-size:34px;color:#23262B;margin-top:12px;font-weight:500;">全社展開</div><div style="font-size:26px;color:#7B7E82;margin-top:8px;line-height:1.5;">主要サービスへ順次</div></div>
+              <div style="padding-right:40px;"><div class="mono" style="font-size:26px;color:#A29C90;letter-spacing:1px;">Q4</div><div style="font-size:34px;color:#7B7E82;margin-top:12px;font-weight:500;">SLO 運用</div><div style="font-size:26px;color:#A29C90;margin-top:8px;line-height:1.5;">指標に基づく改善</div></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 13 QUOTE -->
+      <div class="deck-slide">
+        <section data-label="引用" data-speaker-notes="引用・証言の定型。大きな明朝の一文＋発言者。背景は和紙、引用符は山吹で軽く効かせる。" style="background:#F5F2EC;padding:120px 140px;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box;">
+          <div class="mincho" style="font-size:160px;line-height:0.7;color:#E0A63C;height:90px;">“</div>
+          <p class="mincho" style="font-size:66px;line-height:1.55;margin:0;color:#23262B;font-weight:500;max-width:1500px;">どこで詰まっているかが<span style="color:#2F5375;">見える</span>ようになって、<br>初めて改善の議論が前に進むようになった。</p>
+          <div style="display:flex;align-items:center;gap:24px;margin-top:64px;">
+            <div style="width:64px;height:64px;border-radius:50%;background:#2F5375;"></div>
+            <div>
+              <div style="font-size:32px;color:#23262B;font-weight:500;">佐藤 花子</div>
+              <div style="font-size:28px;color:#7B7E82;">SRE チームリード</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 14 FLYWHEEL -->
+      <div class="deck-slide">
+        <section data-label="学びのサイクル" data-speaker-notes="自己強化するサイクル（フライホイール）の定型。中央にハブ、周囲に4段階、回転を示す藍青の弧矢印。段階名だけ差し替えれば再利用できる。" style="background:#F5F2EC;padding:80px 110px;display:flex;align-items:center;gap:80px;box-sizing:border-box;">
+          <div style="flex:0 0 460px;">
+            <span class="mono" style="font-size:24px;letter-spacing:3px;color:#B0A48F;text-transform:uppercase;">The Flywheel</span>
+            <h2 class="mincho" style="font-weight:600;font-size:64px;margin:24px 0 28px;color:#23262B;line-height:1.3;">回り始めると<br>速くなる</h2>
+            <p style="font-size:32px;color:#5C5F63;line-height:1.7;margin:0 0 40px;">一つひとつの改善が次の観測を鋭くし、サイクル全体の勢いになる。</p>
+            <div style="display:flex;flex-direction:column;gap:20px;">
+              <div style="display:flex;align-items:center;gap:18px;"><span class="mono" style="font-size:24px;color:#2F5375;">01</span><span style="font-size:28px;color:#23262B;">観測する</span></div>
+              <div style="display:flex;align-items:center;gap:18px;"><span class="mono" style="font-size:24px;color:#2F5375;">02</span><span style="font-size:28px;color:#23262B;">仮説を立てる</span></div>
+              <div style="display:flex;align-items:center;gap:18px;"><span class="mono" style="font-size:24px;color:#2F5375;">03</span><span style="font-size:28px;color:#23262B;">試す</span></div>
+              <div style="display:flex;align-items:center;gap:18px;"><span class="mono" style="font-size:24px;color:#2F5375;">04</span><span style="font-size:28px;color:#23262B;">学びを定着させる</span></div>
+            </div>
+          </div>
+          <div style="flex:1;display:flex;justify-content:center;">
+            <div style="position:relative;width:600px;height:600px;">
+              <svg viewBox="0 0 600 600" role="img" aria-label="学びのサイクルを表す4段階の循環図：観測する→仮説を立てる→試す→定着させる" style="position:absolute;inset:0;width:100%;height:100%;">
+                <defs>
+                  <marker id="fwAh" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M1,1 L9,5 L1,9 Z" fill="#2F5375"></path></marker>
+                </defs>
+                <path d="M371.8,102.7 A210,210 0 0 1 497.3,228.2" fill="none" stroke="#2F5375" stroke-width="5" marker-end="url(#fwAh)"></path>
+                <path d="M497.3,371.8 A210,210 0 0 1 371.8,497.3" fill="none" stroke="#2F5375" stroke-width="5" marker-end="url(#fwAh)"></path>
+                <path d="M228.2,497.3 A210,210 0 0 1 102.7,371.8" fill="none" stroke="#2F5375" stroke-width="5" marker-end="url(#fwAh)"></path>
+                <path d="M102.7,228.2 A210,210 0 0 1 228.2,102.7" fill="none" stroke="#2F5375" stroke-width="5" marker-end="url(#fwAh)"></path>
+              </svg>
+              <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:220px;height:220px;border-radius:50%;background:#2F5375;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 16px 40px rgba(47,83,117,0.25);">
+                <span class="mincho" style="font-size:40px;color:#FFFFFF;line-height:1.4;font-weight:500;">学びの<br>サイクル</span>
+              </div>
+              <div style="position:absolute;left:50%;top:15%;transform:translate(-50%,-50%);width:170px;background:#FFFFFF;border:2px solid #E4DED2;border-radius:14px;padding:18px 14px;text-align:center;"><div class="mono" style="font-size:20px;color:#B07E1E;">01</div><div style="font-size:26px;color:#23262B;margin-top:6px;font-weight:500;">観測する</div></div>
+              <div style="position:absolute;left:85%;top:50%;transform:translate(-50%,-50%);width:170px;background:#FFFFFF;border:2px solid #E4DED2;border-radius:14px;padding:18px 14px;text-align:center;"><div class="mono" style="font-size:20px;color:#2F5375;">02</div><div style="font-size:26px;color:#23262B;margin-top:6px;font-weight:500;">仮説を立てる</div></div>
+              <div style="position:absolute;left:50%;top:85%;transform:translate(-50%,-50%);width:170px;background:#FFFFFF;border:2px solid #E4DED2;border-radius:14px;padding:18px 14px;text-align:center;"><div class="mono" style="font-size:20px;color:#2F5375;">03</div><div style="font-size:26px;color:#23262B;margin-top:6px;font-weight:500;">試す</div></div>
+              <div style="position:absolute;left:15%;top:50%;transform:translate(-50%,-50%);width:170px;background:#FFFFFF;border:2px solid #E4DED2;border-radius:14px;padding:18px 14px;text-align:center;"><div class="mono" style="font-size:20px;color:#2F5375;">04</div><div style="font-size:26px;color:#23262B;margin-top:6px;font-weight:500;">定着させる</div></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 15 INNER / OUTER LOOP -->
+      <div class="deck-slide">
+        <section data-label="Inner / Outer ループ" data-speaker-notes="速い内側ループと遅い外側ループを1つの大きな改善ループにまとめる定型。内=藍青、外=緑、中央のハブが両者を束ねる。開発の内外ループの説明に。" style="background:#F5F2EC;padding:80px 110px;display:flex;align-items:center;gap:70px;box-sizing:border-box;">
+          <div style="flex:0 0 600px;display:flex;justify-content:center;">
+            <div style="position:relative;width:600px;height:600px;">
+              <svg viewBox="0 0 600 600" role="img" aria-label="内側ループ（コード・ビルド・テスト）と外側ループ（リリース・本番で観測・学習）を継続的改善のハブが束ねる二重円の図" style="position:absolute;inset:0;width:100%;height:100%;">
+                <defs>
+                  <marker id="outAh" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M1,1 L9,5 L1,9 Z" fill="#3E7A55"></path></marker>
+                  <marker id="inAh" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M1,1 L9,5 L1,9 Z" fill="#2F5375"></path></marker>
+                </defs>
+                <path d="M364.7,58.5 A250,250 0 0 1 541.5,364.7" fill="none" stroke="#3E7A55" stroke-width="5" marker-end="url(#outAh)"></path>
+                <path d="M476.8,476.8 A250,250 0 0 1 123.2,476.8" fill="none" stroke="#3E7A55" stroke-width="5" marker-end="url(#outAh)"></path>
+                <path d="M58.5,364.7 A250,250 0 0 1 235.3,58.5" fill="none" stroke="#3E7A55" stroke-width="5" marker-end="url(#outAh)"></path>
+                <path d="M425.6,266.3 A130,130 0 0 1 333.7,425.6" fill="none" stroke="#2F5375" stroke-width="5" marker-end="url(#inAh)"></path>
+                <path d="M266.3,425.6 A130,130 0 0 1 174.4,266.3" fill="none" stroke="#2F5375" stroke-width="5" marker-end="url(#inAh)"></path>
+                <path d="M208.1,208.1 A130,130 0 0 1 391.9,208.1" fill="none" stroke="#2F5375" stroke-width="5" marker-end="url(#inAh)"></path>
+              </svg>
+              <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:118px;height:118px;border-radius:50%;background:#E0A63C;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 12px 30px rgba(224,166,60,0.3);"><span class="mincho" style="font-size:26px;color:#3A2A08;line-height:1.3;font-weight:600;">継続的<br>改善</span></div>
+              <!-- outer nodes (緑) -->
+              <div style="position:absolute;left:50%;top:8.3%;transform:translate(-50%,-50%);width:150px;text-align:center;background:#3E7A55;border-radius:12px;padding:14px 10px;"><div style="font-size:24px;color:#FFFFFF;font-weight:500;">リリース</div></div>
+              <div style="position:absolute;left:86.1%;top:70.8%;transform:translate(-50%,-50%);width:150px;text-align:center;background:#3E7A55;border-radius:12px;padding:14px 10px;"><div style="font-size:24px;color:#FFFFFF;font-weight:500;">本番で観測</div></div>
+              <div style="position:absolute;left:13.9%;top:70.8%;transform:translate(-50%,-50%);width:150px;text-align:center;background:#3E7A55;border-radius:12px;padding:14px 10px;"><div style="font-size:24px;color:#FFFFFF;font-weight:500;">学習</div></div>
+              <!-- inner nodes (藍青) -->
+              <div style="position:absolute;left:68.8%;top:39.2%;transform:translate(-50%,-50%);width:120px;text-align:center;background:#FFFFFF;border:2px solid #2F5375;border-radius:11px;padding:11px 8px;"><div style="font-size:22px;color:#2F5375;font-weight:500;">コード</div></div>
+              <div style="position:absolute;left:50%;top:71.7%;transform:translate(-50%,-50%);width:120px;text-align:center;background:#FFFFFF;border:2px solid #2F5375;border-radius:11px;padding:11px 8px;"><div style="font-size:22px;color:#2F5375;font-weight:500;">テスト</div></div>
+              <div style="position:absolute;left:31.2%;top:39.2%;transform:translate(-50%,-50%);width:120px;text-align:center;background:#FFFFFF;border:2px solid #2F5375;border-radius:11px;padding:11px 8px;"><div style="font-size:22px;color:#2F5375;font-weight:500;">ビルド</div></div>
+            </div>
+          </div>
+          <div style="flex:1;">
+            <span class="mono" style="font-size:24px;letter-spacing:3px;color:#B0A48F;text-transform:uppercase;">Inner &amp; Outer Loop</span>
+            <h2 class="mincho" style="font-weight:600;font-size:60px;margin:24px 0 40px;color:#23262B;line-height:1.3;">2つのループを<br>1つに束ねる</h2>
+            <div style="display:flex;flex-direction:column;gap:32px;">
+              <div style="display:flex;gap:22px;align-items:flex-start;">
+                <div style="width:20px;height:20px;border:4px solid #2F5375;border-radius:6px;flex:none;margin-top:6px;"></div>
+                <div><div style="font-size:32px;color:#23262B;font-weight:700;margin-bottom:6px;">Inner Loop — 速い</div><div style="font-size:28px;color:#5C5F63;line-height:1.6;">コード・ビルド・テスト。開発者が秒〜分で回す内側の輪。</div></div>
+              </div>
+              <div style="display:flex;gap:22px;align-items:flex-start;">
+                <div style="width:20px;height:20px;background:#3E7A55;border-radius:6px;flex:none;margin-top:6px;"></div>
+                <div><div style="font-size:32px;color:#23262B;font-weight:700;margin-bottom:6px;">Outer Loop — 遅い</div><div style="font-size:28px;color:#5C5F63;line-height:1.6;">リリース・観測・学習。日〜週の単位で回る外側の輪。</div></div>
+              </div>
+              <div style="display:flex;gap:22px;align-items:flex-start;">
+                <div style="width:20px;height:20px;background:#E0A63C;border-radius:50%;flex:none;margin-top:6px;"></div>
+                <div><div style="font-size:32px;color:#23262B;font-weight:700;margin-bottom:6px;">まとめる大きな輪</div><div style="font-size:28px;color:#5C5F63;line-height:1.6;">両者が噛み合って、継続的改善という一つの回転になる。</div></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 16 TWO SEPARATE LOOPS (SPEED MISMATCH) -->
+      <div class="deck-slide">
+        <section data-label="速い内側・詰まる外側" data-speaker-notes="速い内側ループと、待ち（砂時計）だらけの外側ループを横並びで対比する定型。内=藍青の高速回転、外=緑＋山吹の砂時計、下の波線は遅くノイズの多いフィードバック。速度差がボトルネックになる話に。" style="background:#F5F2EC;padding:70px 110px 60px;display:flex;flex-direction:column;box-sizing:border-box;">
+          <h2 class="mincho" style="font-weight:600;font-size:56px;margin:0 0 6px;color:#23262B;">速い内側ループ、詰まる外側ループ</h2>
+          <p style="font-size:28px;color:#7B7E82;margin:0 0 18px;">生成量は増える一方、外側の待ち時間が回転全体の律速になる。</p>
+          <div style="flex:1;display:flex;justify-content:center;align-items:center;">
+            <div style="position:relative;width:1700px;height:700px;">
+              <svg viewBox="0 0 1700 700" role="img" aria-label="速い内側ループ（AI支援の高頻度な開発）と、砂時計の待ちが多い外側ループ（レビュー・コンプライアンス・セキュリティ等）を対比した図" style="position:absolute;inset:0;width:100%;height:100%;">
+                <defs>
+                  <marker id="bluAh2" markerWidth="9" markerHeight="9" refX="4.5" refY="4.5" orient="auto"><path d="M1,1 L8,4.5 L1,8 Z" fill="#2F5375"></path></marker>
+                  <marker id="grnAh2" markerWidth="9" markerHeight="9" refX="4.5" refY="4.5" orient="auto"><path d="M1,1 L8,4.5 L1,8 Z" fill="#3E7A55"></path></marker>
+                  <marker id="dkAh2" markerWidth="9" markerHeight="9" refX="4.5" refY="4.5" orient="auto"><path d="M1,1 L8,4.5 L1,8 Z" fill="#23262B"></path></marker>
+                  <marker id="mtAh2" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M1,1 L9,5 L1,9 Z" fill="#B4553B"></path></marker>
+                </defs>
+                <!-- inner fast ring: faint doubled circles + 3 arrowed arcs -->
+                <circle cx="380" cy="360" r="181" fill="none" stroke="#2F5375" stroke-width="3" opacity="0.28"></circle>
+                <circle cx="380" cy="360" r="199" fill="none" stroke="#2F5375" stroke-width="3" opacity="0.28"></circle>
+                <path d="M196.5,310.8 A190,190 0 0 1 514.3,225.7" fill="none" stroke="#2F5375" stroke-width="5" marker-end="url(#bluAh2)"></path>
+                <path d="M514.3,225.7 A190,190 0 0 1 429.2,543.5" fill="none" stroke="#2F5375" stroke-width="5" marker-end="url(#bluAh2)"></path>
+                <path d="M429.2,543.5 A190,190 0 0 1 196.5,310.8" fill="none" stroke="#2F5375" stroke-width="5" marker-end="url(#bluAh2)"></path>
+                <!-- outer slow ring: 3 arrowed arcs -->
+                <path d="M1055,576.5 A250,250 0 0 1 1055,143.5" fill="none" stroke="#3E7A55" stroke-width="5" marker-end="url(#grnAh2)"></path>
+                <path d="M1055,143.5 A250,250 0 0 1 1430,360" fill="none" stroke="#3E7A55" stroke-width="5" marker-end="url(#grnAh2)"></path>
+                <path d="M1430,360 A250,250 0 0 1 1055,576.5" fill="none" stroke="#3E7A55" stroke-width="5" marker-end="url(#grnAh2)"></path>
+                <!-- top hand-off: high-volume bundle of arrows inner -> outer -->
+                <path d="M560,210 C760,70 980,70 1120,150" fill="none" stroke="#23262B" stroke-width="3"></path>
+                <path d="M560,222 C760,86 980,86 1128,168" fill="none" stroke="#23262B" stroke-width="3"></path>
+                <path d="M560,234 C760,102 980,102 1136,186" fill="none" stroke="#23262B" stroke-width="3.5" marker-end="url(#dkAh2)"></path>
+                <!-- bottom slow / noisy feedback -->
+                <path d="M1035,612 q -45,30 -95,12 q -55,-20 -105,12 q -55,32 -110,4 q -50,-24 -105,4" fill="none" stroke="#B4553B" stroke-width="3.5" marker-end="url(#mtAh2)"></path>
+              </svg>
+
+              <!-- inner loop labels -->
+              <div style="position:absolute;left:380px;top:360px;transform:translate(-50%,-50%);width:196px;text-align:center;">
+                <div class="mincho" style="font-size:30px;color:#2F5375;font-weight:600;line-height:1.35;">AI支援の<br>内側ループ</div>
+                <div class="mono" style="font-size:18px;color:#3E7A55;letter-spacing:1px;margin-top:8px;">FAST · 高頻度</div>
+              </div>
+              <div style="position:absolute;left:380px;top:170px;transform:translate(-50%,-50%);width:190px;text-align:center;background:#FFFFFF;border:2px solid #2F5375;border-radius:12px;padding:12px 10px;"><div style="font-size:23px;color:#23262B;font-weight:500;">高頻度プッシュ</div></div>
+              <div style="position:absolute;left:585px;top:360px;transform:translate(-50%,-50%);width:176px;text-align:center;background:#FFFFFF;border:2px solid #2F5375;border-radius:12px;padding:12px 10px;"><div style="font-size:22px;color:#23262B;font-weight:500;">AI生成コード</div></div>
+              <div style="position:absolute;left:380px;top:550px;transform:translate(-50%,-50%);width:150px;text-align:center;background:#FFFFFF;border:2px solid #2F5375;border-radius:12px;padding:12px 10px;"><div style="font-size:23px;color:#23262B;font-weight:500;">ビルド</div></div>
+              <div style="position:absolute;left:190px;top:360px;transform:translate(-50%,-50%);width:150px;text-align:center;background:#FFFFFF;border:2px solid #2F5375;border-radius:12px;padding:12px 10px;"><div style="font-size:23px;color:#23262B;font-weight:500;">デバッグ</div></div>
+
+              <!-- outer loop labels -->
+              <div style="position:absolute;left:1180px;top:360px;transform:translate(-50%,-50%);width:260px;text-align:center;">
+                <div class="mincho" style="font-size:34px;color:#3E7A55;font-weight:600;line-height:1.35;">ボトルネックの<br>外側ループ</div>
+                <div class="mono" style="font-size:20px;color:#B4553B;letter-spacing:1px;margin-top:8px;">SLOW · 待ち多発</div>
+              </div>
+              <div style="position:absolute;left:963.5px;top:235px;transform:translate(-50%,-50%);width:150px;text-align:center;background:#3E7A55;border-radius:11px;padding:11px 8px;"><div style="font-size:22px;color:#FFFFFF;font-weight:500;">キュー</div></div>
+              <div style="position:absolute;left:1180px;top:110px;transform:translate(-50%,-50%);width:170px;text-align:center;background:#3E7A55;border-radius:11px;padding:11px 8px;"><div style="font-size:22px;color:#FFFFFF;font-weight:500;">手動レビュー</div></div>
+              <div style="position:absolute;left:1396.5px;top:235px;transform:translate(-50%,-50%);width:180px;text-align:center;background:#3E7A55;border-radius:11px;padding:11px 8px;"><div style="font-size:22px;color:#FFFFFF;font-weight:500;">コンプライアンス</div></div>
+              <div style="position:absolute;left:1396.5px;top:485px;transform:translate(-50%,-50%);width:160px;text-align:center;background:#3E7A55;border-radius:11px;padding:11px 8px;"><div style="font-size:22px;color:#FFFFFF;font-weight:500;">セキュリティ</div></div>
+              <div style="position:absolute;left:1180px;top:610px;transform:translate(-50%,-50%);width:130px;text-align:center;background:#3E7A55;border-radius:11px;padding:11px 8px;"><div style="font-size:22px;color:#FFFFFF;font-weight:500;">テスト</div></div>
+              <div style="position:absolute;left:963.5px;top:485px;transform:translate(-50%,-50%);width:130px;text-align:center;background:#3E7A55;border-radius:11px;padding:11px 8px;"><div style="font-size:22px;color:#FFFFFF;font-weight:500;">デプロイ</div></div>
+
+              <!-- hourglass wait badges on outer ring -->
+              <div style="position:absolute;left:1305px;top:143.5px;transform:translate(-50%,-50%);width:46px;height:46px;background:#FFFFFF;border:1px solid #E4DED2;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;"><div style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:12px solid #E0A63C;"></div><div style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:12px solid #E0A63C;"></div></div>
+              <div style="position:absolute;left:1305px;top:576.5px;transform:translate(-50%,-50%);width:46px;height:46px;background:#FFFFFF;border:1px solid #E4DED2;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;"><div style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:12px solid #E0A63C;"></div><div style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:12px solid #E0A63C;"></div></div>
+              <div style="position:absolute;left:1055px;top:576.5px;transform:translate(-50%,-50%);width:46px;height:46px;background:#FFFFFF;border:1px solid #E4DED2;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;"><div style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:12px solid #E0A63C;"></div><div style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:12px solid #E0A63C;"></div></div>
+              <div style="position:absolute;left:1055px;top:143.5px;transform:translate(-50%,-50%);width:46px;height:46px;background:#FFFFFF;border:1px solid #E4DED2;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;"><div style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:12px solid #E0A63C;"></div><div style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:12px solid #E0A63C;"></div></div>
+
+              <!-- feedback caption -->
+              <div style="position:absolute;left:790px;top:672px;transform:translate(-50%,-50%);background:#F5F2EC;padding:2px 14px;"><span class="mono" style="font-size:22px;color:#B4553B;letter-spacing:1px;">遅い・ノイズの多いフィードバック</span></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 17 CLOSING -->
+      <div class="deck-slide">
+        <section data-label="まとめ／Q&amp;A" data-speaker-notes="締め。ダーク藍青で扉と対を成す。要点を短く3行＋連絡先。Q&amp;Aの合図もここで。" style="background:#16181C;padding:120px 110px;display:flex;flex-direction:column;justify-content:space-between;box-sizing:border-box;">
+          <div>
+            <span class="mono" style="font-size:26px;letter-spacing:4px;color:#6E9BC0;text-transform:uppercase;">Wrap up</span>
+            <h2 class="mincho" style="font-weight:600;font-size:88px;line-height:1.3;margin:28px 0 56px;color:#E9E7DF;">まとめ</h2>
+            <div style="display:flex;flex-direction:column;gap:28px;max-width:1300px;">
+              <div style="display:flex;gap:24px;align-items:baseline;"><span class="mono" style="font-size:30px;color:#E0A63C;">01</span><span style="font-size:38px;color:#D9D6CF;line-height:1.5;">障害は「つながり方」で起きる — まず可視化から。</span></div>
+              <div style="display:flex;gap:24px;align-items:baseline;"><span class="mono" style="font-size:30px;color:#E0A63C;">02</span><span style="font-size:38px;color:#D9D6CF;line-height:1.5;">自動計装なら小さく始められる。</span></div>
+              <div style="display:flex;gap:24px;align-items:baseline;"><span class="mono" style="font-size:30px;color:#E0A63C;">03</span><span style="font-size:38px;color:#D9D6CF;line-height:1.5;">運用者目線の導線が、数字を動かす。</span></div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid #2E3138;padding-top:40px;">
+            <div class="mincho" style="font-size:44px;color:#E9E7DF;">ご清聴ありがとうございました</div>
+            <div class="mono" style="font-size:28px;color:#8B8E93;">@yamada_taro · platform-eng</div>
+          </div>
+        </section>
+      </div>
