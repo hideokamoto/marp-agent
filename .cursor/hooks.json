@@ -3,7 +3,7 @@
   "hooks": {
     "beforeShellExecution": [
       {
-        "command": "bash -c 'cat > /dev/null; npm ci && CI=true npm test'",
+        "command": "bash -c 'cat > /dev/null; npm ci && CI=true npm test || exit 2'",
         "matcher": "git commit",
         "timeout": 300
       }
