@@ -1,0 +1,3 @@
+{
+  "install": "npm ci && bash .cursor/setup-chunk.sh"
+}
