@@ -1,0 +1,39 @@
+{
+  "commands": [
+    {
+      "name": "install",
+      "run": "npm ci",
+      "remote": true
+    },
+    {
+      "name": "test",
+      "run": "npm test",
+      "role": "gate",
+      "timeout": 300,
+      "remote": true
+    }
+  ],
+  "vcs": {
+    "org": "hideokamoto",
+    "repo": "marp-agent"
+  },
+  "validation": {
+    "sidecarImage": "d42ecc51-167d-4749-a26c-a40ae407eaa9"
+  },
+  "orgID": "b478833b-34cf-467e-b33d-143c1aa82a3d",
+  "environment": {
+    "stack": "typescript",
+    "setup": [
+      {
+        "name": "system",
+        "command": "curl -fsSL https://deb.nodesource.com/setup_26.x | sudo -E bash - && sudo apt-get install -y nodejs --no-install-recommends && sudo rm -rf /var/lib/apt/lists/*"
+      },
+      {
+        "name": "install",
+        "command": "npm install"
+      }
+    ],
+    "image": "cimg/node",
+    "image_version": "26.8.1"
+  }
+}
